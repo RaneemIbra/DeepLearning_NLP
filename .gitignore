@@ -6,3 +6,6 @@ __pycache__/
 
 .DS_Store
 Thumbs.db
+NLP/knesset_corpus.jsonl
+NLP/212920896_212245096.zip
+NLP/212920896_212245096_hw1_report.pdf
