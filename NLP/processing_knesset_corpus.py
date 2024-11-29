@@ -29,13 +29,19 @@ def divideToSentences(text):
 # function to check if a sentence is valid
 def ValidSentence(sentence):
     # check if the sentence contains Hebrew characters, the regex is the unicode for hebrew letters
-    if not re.search(r"[\u0590-\u05FF]", sentence):
+    containsHebrew = False
+    for char in sentence:
+        if "\u0590" <= char <= "\u05FF":
+            containsHebrew = True
+            break
+    if not containsHebrew:
         return False
     # if the sentence doesn't have any meaningful text like special chars only then we want to not include it
-    if re.fullmatch(r"[^\w\u0590-\u05FF]+", sentence):
+    words = re.split(r'\s+', sentence.strip())
+    if all(re.fullmatch(r"[^\w\u0590-\u05FF]+", word) for word in words):
         return False
     # if the sentence has placeholders we also want to avoid it
-    if re.search(r"\.\.\.|---", sentence):
+    if "..." in sentence or "---" in sentence:
         return False
     return True
 
@@ -44,22 +50,43 @@ def Tokenize(sentence):
     # a list that will hold all the tokens
     tokens = []
     # split the sentence into words from the whitespaces
-    for word in sentence.split():
-        # this line also splits the tokens to separate the special chars so "hello," will be "hello" + ","
-        tokens.extend(re.findall(r"\w+|[^\w\s]", word))
+    words = sentence.split()
+    for word in words:
+        currentToken = ""
+        for char in word:
+            # check if the char is a letter or a number and if yes then add it to the token
+            if char.isalnum():
+                currentToken += char
+            # if we encounter a special char
+            else:
+                # check if the token is not empty
+                if currentToken:
+                    # add the token to the list
+                    tokens.append(currentToken)
+                    # then we reset the current token
+                    currentToken = ""
+                # we add the punctuation or the symbol that is left as a separate token
+                tokens.append(char)
+
+        # if there is any token after the loop, we add it to the tokens list.
+        if currentToken:
+            tokens.append(currentToken)
     return tokens
 
 # main processing function, where almost all the requirements happen (explained in each line)
 # the function takes the input folder where all the docx file are, and also where the output file will be stored
 def workOnFilesFunc(inputFolder, outputFile):
     # we read the protocol files to start processing them
-    protocol_files = [f for f in os.listdir(inputFolder) if f.endswith(".docx")]
+    files = []
+    for file_name in os.listdir(inputFolder):
+        if file_name.endswith(".docx"):
+            files.append(file_name)
     # for debugging to check if we are reading the correct files
-    print("Found files:", protocol_files)
+    print(f"Found protocol files: {files}")
     # init an empty list for the data that we will store in the jsonl file
     jsonlList = []
     # loop over the files to start the processing
-    for file in protocol_files:
+    for file in files:
         # we use regex here to extract the kenest number from the docx title
         match = re.search(r'(\d+)_pt', file)
         # extract knesset number and if we didn't find a number then as a fallback we assign -1
@@ -130,8 +157,8 @@ def workOnFilesFunc(inputFolder, outputFile):
                                 })
                 # now we repeat the same process if there was no speaker found by attributing the text to the last speaker
                 elif lastSpeaker:
-                    additional_sentences = divideToSentences(text)
-                    for sentence in additional_sentences:
+                    additionalSentences = divideToSentences(text)
+                    for sentence in additionalSentences:
                         if ValidSentence(sentence):
                             tokens = Tokenize(sentence)
                             if len(tokens) >= 4:
