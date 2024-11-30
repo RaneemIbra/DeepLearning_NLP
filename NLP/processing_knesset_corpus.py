@@ -18,12 +18,14 @@ def divideToSentences(text):
             # we check if the sentence has a meaning and not only a single char then we add it
             if len(sentence.strip()) > 1:
                 # we add the sentence to the list, and we use strip to avoid white spaces
-                sentences.append(sentence.strip())
+                sentenceWithNoWhiteSpace = sentence.strip()
+                sentences.append(sentenceWithNoWhiteSpace)
                 # init the sentence to blank again to avoid accumulation 
                 sentence = ""
     # after we finish looping over the text we add any remaining text and then return the list
     if sentence.strip():
-        sentences.append(sentence.strip())
+        sentenceWithNoWhiteSpace = sentence.strip()
+        sentences.append(sentenceWithNoWhiteSpace)
     return sentences
 
 # function to check if a sentence is valid
@@ -82,7 +84,7 @@ def workOnFilesFunc(inputFolder, outputFile):
         if file_name.endswith(".docx"):
             files.append(file_name)
     # for debugging to check if we are reading the correct files
-    print(f"Found protocol files: {files}")
+    print(f"files: {files}")
     # init an empty list for the data that we will store in the jsonl file
     jsonlList = []
     # loop over the files to start the processing
@@ -172,18 +174,17 @@ def workOnFilesFunc(inputFolder, outputFile):
                                 })
         # here we catch the exception if a problem occured while processing a file
         except Exception as e:
-            print(f"Error processing file {file}: {e}")
+            print(f"{file}: {e}")
     # here we open the output file in writing mode and we write each item from the list to here
     with open(outputFile, "w", encoding="utf-8") as jsonl_file:
         for entry in jsonlList:
             jsonl_file.write(json.dumps(entry, ensure_ascii=False) + "\n")
     # print where the file was stored to see if it worked
-    print(f"JSONL file saved at: {outputFile}")
+    print(f"file saved at: {outputFile}")
 
 if __name__ == "__main__":
     # check if the command is wrong
     if len(sys.argv) != 3:
-        print("Usage: python processing_knesset_corpus.py <path/to/input_corpus_dir> <path/to/outputFile_name.jsonl>")
         sys.exit(1)
     # otherwise we want to take the path for the input and the path for the output
     inputFolder = sys.argv[1]
