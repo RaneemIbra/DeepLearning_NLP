@@ -96,6 +96,37 @@ def extract_speaker_name(text):
         return clean_name if valid_name else "Unknown Speaker"
     else:
         return "Unknown Speaker"
+    
+# a function to extract the number written in text (מספר ישיבה)
+def hebrew_text_to_number(hebrew_number):
+    # a dictionary mapping Hebrew words to integer equivalents
+    hebrew_to_int = {
+        "אחד": 1, "אחת": 1, "שניים": 2, "שתיים": 2, "שלושה": 3, "שלוש": 3, "ארבעה": 4, "ארבע": 4,
+        "חמשה": 5, "חמש": 5, "ששה": 6, "שש": 6, "שבעה": 7, "שבע": 7, "שמונה": 8, "תשעה": 9, "תשע": 9,
+        "עשרה": 10, "עשר": 10, "עשרים": 20, "שלושים": 30, "ארבעים": 40, "חמישים": 50,
+        "שישים": 60, "שבעים": 70, "שמונים": 80, "תשעים": 90, "מאה": 100, "מאתיים": 200,
+        "שלוש-מאות": 300, "ארבע-מאות": 400
+    }
+    # strip number from white spaces
+    hebrew_number = hebrew_number.strip()
+    # handle the prefix "ה"
+    if hebrew_number.startswith("ה"):
+        hebrew_number = hebrew_number[1:]
+    # replace "-ו" and "ו" used as connectors with spaces
+    hebrew_number = hebrew_number.replace("-ו", " ").replace("ו", " ")
+    # split into components
+    components = re.split(r"[-\s]", hebrew_number)
+    # calculate the total value
+    total = 0
+    for word in components:
+        value = hebrew_to_int.get(word, 0)
+        if value == 0 and word:
+            # for debugging issues
+            print(f"Unrecognized Hebrew numeral: {word}")
+        total += value
+    return total
+
+
 
 # function to start processing the files following the requirements of the HW
 def file_processing_function(input_folder, output_file):
@@ -123,8 +154,7 @@ def file_processing_function(input_folder, output_file):
             # now we open the document to start working on it
             doc = Document(document_path)
             # since the protocol number is in the beginning of the documents
-            # we don't have to extend the search so we search only the first 10 paragraphs
-            for paragraph in doc.paragraphs[:10]:
+            for paragraph in doc.paragraphs:
                 # try to match the protocol number with the regex
                 protocol_number_match_regex = re.search(r"פרוטוקול מס'? (\d+)", paragraph.text)
                 # if the number matched then we give the protocil_number variable the value
@@ -133,7 +163,12 @@ def file_processing_function(input_folder, output_file):
                 if protocol_number_match_regex:
                     protocol_number = int(protocol_number_match_regex.group(1))
                     break
-            if protocol_number is None:
+                if "הישיבה" in paragraph.text:
+                    hebrew_number_match = re.search(r"הישיבה\s([\u0590-\u05FF\-]+)", paragraph.text)
+                    if hebrew_number_match:
+                        protocol_number = hebrew_text_to_number(hebrew_number_match.group(1))
+                        break
+            if protocol_number is None or protocol_number == 0:
                 protocol_number = -1
             # define a last speaker variable just in case we want to attribute parts of the speech to a speaker
             last_speaker = None
