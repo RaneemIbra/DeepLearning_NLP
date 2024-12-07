@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict, Counter
 import math
-import pandas
+import pandas as pd
 from itertools import islice
 
 class Trigram_LM:
@@ -130,5 +130,22 @@ def save_collocation_to_file(results, n, type):
                 file.write(f"{collocation_text}: {value}\n")
             file.write("\n")
 
-if __name__ == "main":
-    print("hello")
+if __name__ == "__main__":
+    print("hello?")
+    try:
+        with open("knesset_corpus.jsonl", "r", encoding="utf-8") as file:
+            data = [json.loads(line) for line in file]
+        corpus = pd.DataFrame(data)
+    except FileNotFoundError:
+        print("error opening the file")
+        exit()
+
+    k = 10
+    lengths = [2,3,4]
+    t = 5
+
+    for n in lengths:
+        for type in ["committee", "plenary"]:
+            collocations = get_k_n_t_collocations(k=k, n=n, t=t, corpus=corpus, type= type)
+            save_collocation_to_file(collocations, n, type)
+    print("collocations has been saved to the file knesset_collocations.txt")

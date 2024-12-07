@@ -1,0 +1,36 @@
+2-gram collocations:
+Committee:
+Committee corpus:
+
+Plenary corpus:
+
+2-gram collocations:
+Plenary:
+Committee corpus:
+
+Plenary corpus:
+
+3-gram collocations:
+Committee:
+Committee corpus:
+
+Plenary corpus:
+
+3-gram collocations:
+Plenary:
+Committee corpus:
+
+Plenary corpus:
+
+4-gram collocations:
+Committee:
+Committee corpus:
+
+Plenary corpus:
+
+4-gram collocations:
+Plenary:
+Committee corpus:
+
+Plenary corpus:
+
