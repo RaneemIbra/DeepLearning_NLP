@@ -3,6 +3,7 @@ from collections import defaultdict, Counter
 import math
 import pandas as pd
 from itertools import islice
+import time
 
 class Trigram_LM:
     def __init__(self, vocab_size):
@@ -26,7 +27,7 @@ class Trigram_LM:
         self.laplace_constant = 1
         self.vocab_size = vocab_size
         self.vocabulary = set()
-    
+
     def calculate_prob_of_sentence(self, space_separated_tokens):
         tokens = space_separated_tokens.split()
         tokens = ["<s>", "<s>"] + tokens + ["</s>"]
@@ -42,110 +43,149 @@ class Trigram_LM:
             trigrams_count = self.models[protocol_type][trigrams]
             total_count = self.total[protocol_type]
 
-            if(total_count > 0):
+            if total_count > 0:
                 unigram_prob = (unigrams_count + self.laplace_constant) / (total_count + self.vocab_size)
             else:
                 unigram_prob = 0
 
-            if(self.unigrams[protocol_type][tokens[i-1]] > 0):
+            if self.unigrams[protocol_type][tokens[i-1]] > 0:
                 bigrams_prob = (bigrams_count + self.laplace_constant) / (self.unigrams[protocol_type][tokens[i-1]] + self.vocab_size)
             else:
                 bigrams_prob = 0
 
-            if(self.bigrams[protocol_type][(tokens[i-2], tokens[i-1])] > 0):
+            if self.bigrams[protocol_type][(tokens[i-2], tokens[i-1])] > 0:
                 trigrams_prob = (trigrams_count + self.laplace_constant) / (self.bigrams[protocol_type][(tokens[i-2], tokens[i-1])] + self.vocab_size)
             else:
                 trigrams_prob = 0
 
-            # P(Wk| Wk-2,Wk-1) = alpha * P_trigram + beta * P_bigram + gamma * P_unigram
-            # give more weight to the last word no?
             probability = trigrams_prob * 0.1 + bigrams_prob * 0.3 + unigram_prob * 0.6
-            if(probability > 0):
+            if probability > 0:
                 log_prob += math.log(probability)
             else:
                 log_prob += float("-inf")
         return log_prob
-    
+
     def generate_next_token(self, space_separated_tokens):
         tokens = space_separated_tokens.split()
-        if(len(tokens) < 2):
+        if len(tokens) < 2:
             tokens = ["<s>"] * (2 - len(tokens)) + tokens
         last_token = tokens[-1]
         second_last_token = tokens[-2]
         generated_token = None
         max_probability = float("-inf")
-        tokens_string = last_token.join(second_last_token)
         for i in self.vocabulary:
-            # should we keep in mind the protocol type?
-            probability = self.calculate_prob_of_sentence(i, tokens_string)
-            if(probability > max_probability):
+            trigram = (second_last_token, last_token, i)
+            bigram = (last_token, i)
+            unigram = i
+
+            unigrams_count = self.unigrams[self.default_type][unigram]
+            bigrams_count = self.bigrams[self.default_type][bigram]
+            trigrams_count = self.models[self.default_type][trigram]
+            total_count = self.total[self.default_type]
+
+            if total_count > 0:
+                unigram_prob = (unigrams_count + self.laplace_constant) / (total_count + self.vocab_size)
+            else:
+                unigram_prob = 0
+
+            if self.unigrams[self.default_type][last_token] > 0:
+                bigrams_prob = (bigrams_count + self.laplace_constant) / (self.unigrams[self.default_type][last_token] + self.vocab_size)
+            else:
+                bigrams_prob = 0
+
+            if self.bigrams[self.default_type][(second_last_token, last_token)] > 0:
+                trigrams_prob = (trigrams_count + self.laplace_constant) / (self.bigrams[self.default_type][(second_last_token, last_token)] + self.vocab_size)
+            else:
+                trigrams_prob = 0
+
+            probability = trigrams_prob * 0.1 + bigrams_prob * 0.3 + unigram_prob * 0.6
+            if probability > max_probability:
                 max_probability = probability
                 generated_token = i
         return generated_token, max_probability
 
 
+def compute_idf(documents):
+    """Precompute IDF values for all terms in the documents."""
+    total_docs = len(documents)
+    doc_frequency = defaultdict(int)
+    for doc in documents:
+        unique_terms = set(doc.split())
+        for term in unique_terms:
+            doc_frequency[term] += 1
+
+    return {term: math.log(total_docs / (1 + freq)) for term, freq in doc_frequency.items()}
+
+
 def get_k_n_t_collocations(k, n, t, corpus, type):
-    results = {"committee":{}, "plenary":{}}
+    results = {"committee": {}, "plenary": {}}
+
     def extract_ngrams(sentences, n):
+        """Generate n-grams from a list of sentences."""
         ngrams = Counter()
         for sentence in sentences:
             words = sentence.split()
-            ngrams.update(tuple(words[i:i + n]) for i in range(len(words) - n +1))
+            ngrams.update(tuple(words[i:i + n]) for i in range(len(words) - n + 1))
         return ngrams
-    
-    def get_top_k_collocations(collocations, k ,t):
-        filtered_collocations = {collocation: frequency for collocation,
-                                frequency in collocations.items() if frequency >= t}
-        sorted_collocations = sorted(filtered_collocations.items(), key=lambda x: x[1], reverse=True)
-        return list(islice(sorted_collocations, k))
-    
+
     for protocol_type in ["committee", "plenary"]:
-        sentences = corpus[corpus["protocol_type"]== protocol_type]["sentence_text"]
+        sentences = corpus[corpus["protocol_type"] == protocol_type]["sentence_text"]
         ngrams = extract_ngrams(sentences, n)
-        tf_idf = defaultdict(float)
-        if(type == "frequency"):
-            top_k_collocations = get_top_k_collocations(ngrams, k, t)
-            results[protocol_type] = {collocation: frequency for collocation,
-                                    frequency in top_k_collocations}
-        elif(type == "tfidf"):
+
+        if type == "frequency":
+            filtered_collocations = {coll: freq for coll, freq in ngrams.items() if freq >= t}
+            sorted_collocations = sorted(filtered_collocations.items(), key=lambda x: x[1], reverse=True)
+            results[protocol_type] = dict(sorted_collocations[:k])
+        elif type == "tfidf":
             documents = sentences.tolist()
-            for collocation, frequency in ngrams.items():
-                term = " ".join(collocation)
-                tf = frequency / sum(len(doc.split()) for doc in documents)
-                idf = math.log(len(documents) + 1) / (1 + sum(1 for doc in documents if term in doc))
-                tf_idf[collocation] = tf * idf
-            top_k_collocations = sorted(tf_idf.items(), key=lambda x: x[1], reverse=True)[:k]
-            results[protocol_type] = {collocation: freq for collocation,
-                                    freq in top_k_collocations}
+            idf = compute_idf(documents)
+            tf_idf_scores = {}
+            for ngram, freq in ngrams.items():
+                term = " ".join(ngram)
+                tf = freq / len(documents)
+                tf_idf_scores[ngram] = tf * idf.get(term, 0)
+
+            sorted_tfidf = sorted(tf_idf_scores.items(), key=lambda x: x[1], reverse=True)
+            results[protocol_type] = dict(sorted_tfidf[:k])
+
     return results
 
+
 def save_collocation_to_file(results, n, type):
-    with open("knesset_collocations.txt", "a") as file:
+    """Save collocations to a file."""
+    with open("knesset_collocations.txt", "a", encoding="utf-8") as file:
         header = f"{n}-gram collocations:\n{type.capitalize()}:\n"
         file.write(header)
         for protocol_type, collocations in results.items():
             file.write(f"{protocol_type.capitalize()} corpus:\n")
             for collocation, value in collocations.items():
                 collocation_text = " ".join(collocation)
-                file.write(f"{collocation_text}: {value}\n")
+                file.write(f"{collocation_text}: {value:.4f}\n")
             file.write("\n")
 
+
 if __name__ == "__main__":
-    print("hello?")
+    print("Starting the script...")
     try:
         with open("knesset_corpus.jsonl", "r", encoding="utf-8") as file:
             data = [json.loads(line) for line in file]
         corpus = pd.DataFrame(data)
+        print(f"Loaded {len(corpus)} records from 'knesset_corpus.jsonl'.")
     except FileNotFoundError:
-        print("error opening the file")
+        print("Error: File 'knesset_corpus.jsonl' not found.")
         exit()
 
-    k = 10
-    lengths = [2,3,4]
-    t = 5
+    k = 10  # Top k collocations
+    lengths = [2, 3, 4]  # Collocation lengths
+    t = 5  # Minimum frequency threshold
 
     for n in lengths:
-        for type in ["committee", "plenary"]:
-            collocations = get_k_n_t_collocations(k=k, n=n, t=t, corpus=corpus, type= type)
+        for type in ["frequency", "tfidf"]:
+            start_time = time.time()
+            print(f"Processing n={n}, type={type}...")
+            collocations = get_k_n_t_collocations(k=k, n=n, t=t, corpus=corpus, type=type)
+            print(f"Generated collocations for n={n}, type={type}: {len(collocations['committee']) + len(collocations['plenary'])} items.")
             save_collocation_to_file(collocations, n, type)
-    print("collocations has been saved to the file knesset_collocations.txt")
+            print(f"Completed n={n}, type={type} in {time.time() - start_time:.2f} seconds.")
+
+    print("Collocations have been saved to 'knesset_collocations.txt'.")
