@@ -1,6 +1,8 @@
 import json
 from collections import defaultdict, Counter
 import math
+import pandas
+from itertools import islice
 
 class Trigram_LM:
     def __init__(self, vocab_size):
@@ -80,3 +82,53 @@ class Trigram_LM:
                 max_probability = probability
                 generated_token = i
         return generated_token, max_probability
+
+
+def get_k_n_t_collocations(k, n, t, corpus, type):
+    results = {"committee":{}, "plenary":{}}
+    def extract_ngrams(sentences, n):
+        ngrams = Counter()
+        for sentence in sentences:
+            words = sentence.split()
+            ngrams.update(tuple(words[i:i + n]) for i in range(len(words) - n +1))
+        return ngrams
+    
+    def get_top_k_collocations(collocations, k ,t):
+        filtered_collocations = {collocation: frequency for collocation,
+                                frequency in collocations.items() if frequency >= t}
+        sorted_collocations = sorted(filtered_collocations.items(), key=lambda x: x[1], reverse=True)
+        return list(islice(sorted_collocations, k))
+    
+    for protocol_type in ["committee", "plenary"]:
+        sentences = corpus[corpus["protocol_type"]== protocol_type]["sentence_text"]
+        ngrams = extract_ngrams(sentences, n)
+        tf_idf = defaultdict(float)
+        if(type == "frequency"):
+            top_k_collocations = get_top_k_collocations(ngrams, k, t)
+            results[protocol_type] = {collocation: frequency for collocation,
+                                    frequency in top_k_collocations}
+        elif(type == "tfidf"):
+            documents = sentences.tolist()
+            for collocation, frequency in ngrams.items():
+                term = " ".join(collocation)
+                tf = frequency / sum(len(doc.split()) for doc in documents)
+                idf = math.log(len(documents) + 1) / (1 + sum(1 for doc in documents if term in doc))
+                tf_idf[collocation] = tf * idf
+            top_k_collocations = sorted(tf_idf.items(), key=lambda x: x[1], reverse=True)[:k]
+            results[protocol_type] = {collocation: freq for collocation,
+                                    freq in top_k_collocations}
+    return results
+
+def save_collocation_to_file(results, n, type):
+    with open("knesset_collocations.txt", "a") as file:
+        header = f"{n}-gram collocations:\n{type.capitalize()}:\n"
+        file.write(header)
+        for protocol_type, collocations in results.items():
+            file.write(f"{protocol_type.capitalize()} corpus:\n")
+            for collocation, value in collocations.items():
+                collocation_text = " ".join(collocation)
+                file.write(f"{collocation_text}: {value}\n")
+            file.write("\n")
+
+if __name__ == "main":
+    print("hello")
