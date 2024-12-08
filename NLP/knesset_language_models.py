@@ -2,27 +2,15 @@ import json
 from collections import defaultdict, Counter
 import math
 import pandas as pd
-from itertools import islice
 import time
+
 
 class Trigram_LM:
     def __init__(self, vocab_size):
-        self.models = {
-            "committee": defaultdict(int),
-            "plenary": defaultdict(int)
-        }
-        self.bigrams = {
-            "committee": defaultdict(int),
-            "plenary": defaultdict(int)
-        }
-        self.unigrams = {
-            "committee": defaultdict(int),
-            "plenary": defaultdict(int)
-        }
-        self.total = {
-            "committee": 0,
-            "plenary": 0
-        }
+        self.models = {"committee": defaultdict(int), "plenary": defaultdict(int)}
+        self.bigrams = {"committee": defaultdict(int), "plenary": defaultdict(int)}
+        self.unigrams = {"committee": defaultdict(int), "plenary": defaultdict(int)}
+        self.total = {"committee": 0, "plenary": 0}
         self.default_type = "committee"
         self.laplace_constant = 1
         self.vocab_size = vocab_size
@@ -34,8 +22,8 @@ class Trigram_LM:
         log_prob = 0.0
         protocol_type = self.default_type
         for i in range(2, len(tokens)):
-            trigrams = (tokens[i-2], tokens[i-1], tokens[i])
-            bigrams = (tokens[i-1], tokens[i])
+            trigrams = (tokens[i - 2], tokens[i - 1], tokens[i])
+            bigrams = (tokens[i - 1], tokens[i])
             unigrams = tokens[i]
 
             unigrams_count = self.unigrams[protocol_type][unigrams]
@@ -48,13 +36,17 @@ class Trigram_LM:
             else:
                 unigram_prob = 0
 
-            if self.unigrams[protocol_type][tokens[i-1]] > 0:
-                bigrams_prob = (bigrams_count + self.laplace_constant) / (self.unigrams[protocol_type][tokens[i-1]] + self.vocab_size)
+            if self.unigrams[protocol_type][tokens[i - 1]] > 0:
+                bigrams_prob = (bigrams_count + self.laplace_constant) / (
+                    self.unigrams[protocol_type][tokens[i - 1]] + self.vocab_size
+                )
             else:
                 bigrams_prob = 0
 
-            if self.bigrams[protocol_type][(tokens[i-2], tokens[i-1])] > 0:
-                trigrams_prob = (trigrams_count + self.laplace_constant) / (self.bigrams[protocol_type][(tokens[i-2], tokens[i-1])] + self.vocab_size)
+            if self.bigrams[protocol_type][(tokens[i - 2], tokens[i - 1])] > 0:
+                trigrams_prob = (trigrams_count + self.laplace_constant) / (
+                    self.bigrams[protocol_type][(tokens[i - 2], tokens[i - 1])] + self.vocab_size
+                )
             else:
                 trigrams_prob = 0
 
@@ -89,12 +81,16 @@ class Trigram_LM:
                 unigram_prob = 0
 
             if self.unigrams[self.default_type][last_token] > 0:
-                bigrams_prob = (bigrams_count + self.laplace_constant) / (self.unigrams[self.default_type][last_token] + self.vocab_size)
+                bigrams_prob = (bigrams_count + self.laplace_constant) / (
+                    self.unigrams[self.default_type][last_token] + self.vocab_size
+                )
             else:
                 bigrams_prob = 0
 
             if self.bigrams[self.default_type][(second_last_token, last_token)] > 0:
-                trigrams_prob = (trigrams_count + self.laplace_constant) / (self.bigrams[self.default_type][(second_last_token, last_token)] + self.vocab_size)
+                trigrams_prob = (trigrams_count + self.laplace_constant) / (
+                    self.bigrams[self.default_type][(second_last_token, last_token)] + self.vocab_size
+                )
             else:
                 trigrams_prob = 0
 
@@ -117,19 +113,22 @@ def compute_idf(documents):
     return {term: math.log(total_docs / (1 + freq)) for term, freq in doc_frequency.items()}
 
 
-def get_k_n_t_collocations(k, n, t, corpus, type):
+def extract_ngrams(sentences, n):
+    """Generate n-grams from a list of sentences."""
+    ngrams = Counter()
+    for sentence in sentences:
+        words = sentence.split()
+        if len(words) < n:
+            continue
+        ngrams.update(tuple(words[i : i + n]) for i in range(len(words) - n + 1))
+    return ngrams
+
+
+def get_k_n_t_collocations(k, n, t, corpus, type, idf_cache):
     results = {"committee": {}, "plenary": {}}
 
-    def extract_ngrams(sentences, n):
-        """Generate n-grams from a list of sentences."""
-        ngrams = Counter()
-        for sentence in sentences:
-            words = sentence.split()
-            ngrams.update(tuple(words[i:i + n]) for i in range(len(words) - n + 1))
-        return ngrams
-
     for protocol_type in ["committee", "plenary"]:
-        sentences = corpus[corpus["protocol_type"] == protocol_type]["sentence_text"]
+        sentences = corpus[corpus["protocol_type"] == protocol_type]["sentence_text"].tolist()
         ngrams = extract_ngrams(sentences, n)
 
         if type == "frequency":
@@ -137,13 +136,12 @@ def get_k_n_t_collocations(k, n, t, corpus, type):
             sorted_collocations = sorted(filtered_collocations.items(), key=lambda x: x[1], reverse=True)
             results[protocol_type] = dict(sorted_collocations[:k])
         elif type == "tfidf":
-            documents = sentences.tolist()
-            idf = compute_idf(documents)
             tf_idf_scores = {}
+            total_terms = sum(ngrams.values())
             for ngram, freq in ngrams.items():
                 term = " ".join(ngram)
-                tf = freq / len(documents)
-                tf_idf_scores[ngram] = tf * idf.get(term, 0)
+                tf = freq / total_terms
+                tf_idf_scores[ngram] = tf * idf_cache.get(term, 0)
 
             sorted_tfidf = sorted(tf_idf_scores.items(), key=lambda x: x[1], reverse=True)
             results[protocol_type] = dict(sorted_tfidf[:k])
@@ -179,11 +177,14 @@ if __name__ == "__main__":
     lengths = [2, 3, 4]  # Collocation lengths
     t = 5  # Minimum frequency threshold
 
+    # Precompute IDF
+    idf_cache = compute_idf(corpus["sentence_text"].tolist())
+
     for n in lengths:
         for type in ["frequency", "tfidf"]:
             start_time = time.time()
             print(f"Processing n={n}, type={type}...")
-            collocations = get_k_n_t_collocations(k=k, n=n, t=t, corpus=corpus, type=type)
+            collocations = get_k_n_t_collocations(k=k, n=n, t=t, corpus=corpus, type=type, idf_cache=idf_cache)
             print(f"Generated collocations for n={n}, type={type}: {len(collocations['committee']) + len(collocations['plenary'])} items.")
             save_collocation_to_file(collocations, n, type)
             print(f"Completed n={n}, type={type} in {time.time() - start_time:.2f} seconds.")
