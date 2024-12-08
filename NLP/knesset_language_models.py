@@ -102,14 +102,14 @@ class Trigram_LM:
 
 
 def compute_idf(documents):
-    """Precompute IDF values for all terms in the documents."""
+    """Precompute IDF values for all n-grams."""
     total_docs = len(documents)
     doc_frequency = defaultdict(int)
     for doc in documents:
-        unique_terms = set(doc.split())
+        words = doc.split()
+        unique_terms = set(" ".join(words[i:i + n]) for i in range(len(words)) for n in range(1, 5) if i + n <= len(words))
         for term in unique_terms:
             doc_frequency[term] += 1
-
     return {term: math.log(total_docs / (1 + freq)) for term, freq in doc_frequency.items()}
 
 
@@ -125,6 +125,7 @@ def extract_ngrams(sentences, n):
 
 
 def get_k_n_t_collocations(k, n, t, corpus, type, idf_cache):
+    """Extract and rank collocations based on frequency or TF-IDF."""
     results = {"committee": {}, "plenary": {}}
 
     for protocol_type in ["committee", "plenary"]:
@@ -140,8 +141,10 @@ def get_k_n_t_collocations(k, n, t, corpus, type, idf_cache):
             total_terms = sum(ngrams.values())
             for ngram, freq in ngrams.items():
                 term = " ".join(ngram)
-                tf = freq / total_terms
-                tf_idf_scores[ngram] = tf * idf_cache.get(term, 0)
+                tf = freq / total_terms if total_terms > 0 else 0
+                idf = idf_cache.get(term, 0)
+                tf_idf_scores[ngram] = tf * idf
+                print(f"TF: {tf}, IDF: {idf}, Term: {term}")  # Debugging
 
             sorted_tfidf = sorted(tf_idf_scores.items(), key=lambda x: x[1], reverse=True)
             results[protocol_type] = dict(sorted_tfidf[:k])
@@ -152,14 +155,18 @@ def get_k_n_t_collocations(k, n, t, corpus, type, idf_cache):
 def save_collocation_to_file(results, n, type):
     """Save collocations to a file."""
     with open("knesset_collocations.txt", "a", encoding="utf-8") as file:
-        header = f"{n}-gram collocations:\n{type.capitalize()}:\n"
+        header = f"{n}-gram collocations ({type.capitalize()}):\n\n"
         file.write(header)
         for protocol_type, collocations in results.items():
             file.write(f"{protocol_type.capitalize()} corpus:\n")
-            for collocation, value in collocations.items():
-                collocation_text = " ".join(collocation)
-                file.write(f"{collocation_text}: {value:.4f}\n")
+            if collocations:
+                for collocation, value in collocations.items():
+                    collocation_text = " ".join(collocation)
+                    file.write(f"{collocation_text}: {value:.4f}\n")
+            else:
+                file.write("No collocations found.\n")
             file.write("\n")
+        file.write("\n")
 
 
 if __name__ == "__main__":
@@ -180,13 +187,13 @@ if __name__ == "__main__":
     # Precompute IDF
     idf_cache = compute_idf(corpus["sentence_text"].tolist())
 
+    # Process collocations
     for n in lengths:
         for type in ["frequency", "tfidf"]:
             start_time = time.time()
-            print(f"Processing n={n}, type={type}...")
+            print(f"Processing {n}-gram collocations, type: {type}...")
             collocations = get_k_n_t_collocations(k=k, n=n, t=t, corpus=corpus, type=type, idf_cache=idf_cache)
-            print(f"Generated collocations for n={n}, type={type}: {len(collocations['committee']) + len(collocations['plenary'])} items.")
             save_collocation_to_file(collocations, n, type)
-            print(f"Completed n={n}, type={type} in {time.time() - start_time:.2f} seconds.")
+            print(f"Completed {n}-gram collocations for type: {type} in {time.time() - start_time:.2f} seconds.")
 
     print("Collocations have been saved to 'knesset_collocations.txt'.")
