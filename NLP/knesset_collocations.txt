@@ -1,90 +1,28 @@
 2-gram collocations:
-Committee:
-Committee corpus:
-
-Plenary corpus:
-
-2-gram collocations:
-Plenary:
-Committee corpus:
-
-Plenary corpus:
-
-3-gram collocations:
-Committee:
-Committee corpus:
-
-Plenary corpus:
-
-3-gram collocations:
-Plenary:
-Committee corpus:
-
-Plenary corpus:
-
-4-gram collocations:
-Committee:
-Committee corpus:
-
-Plenary corpus:
-
-4-gram collocations:
-Plenary:
-Committee corpus:
-
-Plenary corpus:
-
-2-gram collocations:
 Frequency:
 Committee corpus:
-< <: 8302
-> >: 8298
-< γεαψ: 3766
-" ψ: 3400
-γεαψ >: 3328
-διε ": 3198
-- -: 2829
-< ιεψ: 2702
-ιεψ >: 2702
-) :: 2249
+< <: 8302.0000
+> >: 8298.0000
+< Χ“Χ•Χ‘Χ¨: 3766.0000
+" Χ¨: 3400.0000
+Χ“Χ•Χ‘Χ¨ >: 3328.0000
+Χ”Χ™Χ• ": 3198.0000
+- -: 2829.0000
+< Χ™Χ•Χ¨: 2702.0000
+Χ™Χ•Χ¨ >: 2702.0000
+) :: 2249.0000
 
 Plenary corpus:
-) :: 12421
-ηαψ δλπρϊ: 7389
-- ψΰω: 4400
-– –: 4056
-, ΰπι: 3230
-ηαψι δλπρϊ: 2983
-ψΰω ,: 2853
-διεωα -: 2799
-ΰιπε πελη: 2688
-– ΰιπε: 2579
-
-2-gram collocations:
-Frequency:
-Committee corpus:
-< <: 8302
-> >: 8298
-< γεαψ: 3766
-" ψ: 3400
-γεαψ >: 3328
-διε ": 3198
-- -: 2829
-< ιεψ: 2702
-ιεψ >: 2702
-) :: 2249
-
-Plenary corpus:
-) :: 12421
-ηαψ δλπρϊ: 7389
-- ψΰω: 4400
-– –: 4056
-, ΰπι: 3230
-ηαψι δλπρϊ: 2983
-ψΰω ,: 2853
-διεωα -: 2799
-ΰιπε πελη: 2688
-– ΰιπε: 2579
+) :: 12421.0000
+Χ—Χ‘Χ¨ Χ”Χ›Χ Χ΅Χª: 7389.0000
+- Χ¨ΧΧ©: 4400.0000
+β€“ β€“: 4056.0000
+, ΧΧ Χ™: 3230.0000
+Χ—Χ‘Χ¨Χ™ Χ”Χ›Χ Χ΅Χª: 2983.0000
+Χ¨ΧΧ© ,: 2853.0000
+Χ”Χ™Χ•Χ©Χ‘ -: 2799.0000
+ΧΧ™Χ Χ• Χ Χ•Χ›Χ—: 2688.0000
+β€“ ΧΧ™Χ Χ•: 2579.0000
 
 2-gram collocations:
 Frequency:
