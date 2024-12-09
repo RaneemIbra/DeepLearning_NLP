@@ -3,6 +3,7 @@ from collections import defaultdict, Counter
 import math
 import pandas as pd
 import time
+import random
 
 # define a class just as proposed in the first section of the homework
 class Trigram_LM:
@@ -231,6 +232,43 @@ def save_collocation_to_file(results, n, type):
             file.write("\n")
         file.write("\n")
 
+# a function to mask the tokens in the corpus
+def mask_tokens_in_sentences(sentences, x):
+    # define the list of the masked sentences
+    masked_sentences = []
+    # iterate over the sentences
+    for sentence in sentences:
+        # split the sentences to tokens in order to be able to work with them
+        tokens = sentence.split()
+        # calculate the number of tokens we need to mask
+        number_of_tokens_to_mask = max(1, int(len(tokens) * x / 100))
+        # select the indecies to mark randomly
+        indecies_to_mask = random.sample(range(len(tokens)), number_of_tokens_to_mask)
+        # iterate over the indecies and in each index we need to change the token to the [*]
+        for index in indecies_to_mask:
+            tokens[index] = "[*]"
+        # join the sentences back into a sentence
+        masked_sentences.append(" ".join(tokens))
+    # return the masked sentences
+    return masked_sentences
+
+# a function that returns the origial sentences that we selected
+def mask_sentences(corpus, num_sentences, mask_precent):
+    # select the original sentences
+    original_sentences = random.sample(corpus, num_sentences)
+    # mask the original sentences and save them in another list
+    masked_sentences = mask_tokens_in_sentences(original_sentences, mask_precent)
+    # return both of the lists
+    return original_sentences, masked_sentences
+
+# a function to save the sentences in a file, we pass the name of the file just to use the function twice
+def save_sentences_to_file(sentences, file_name):
+    # open a file with the file name we passed and encoding utf-8 to support non ascii values
+    with open(file_name, "w", encoding="utf-8") as file:
+        # then iterate over all the sentences and write them to the file
+        for sentence in sentences:
+            file.write(sentence + "\n")
+
 # this is the main entry for the program
 if __name__ == "__main__":
     # a printing statement just to debug as well
@@ -270,3 +308,10 @@ if __name__ == "__main__":
             print(f"Completed {n}-gram collocations for type: {type} in {time.time() - start_time:.2f} seconds.")
     # print that the program has finished and the collocation has been saved
     print("Collocations have been saved to 'knesset_collocations.txt'.")
+    # fetch all the committee sentences and put them in a list
+    committee_sentences = corpus[corpus["protocol_type"] == "committee"]["sentence_text"].tolist()
+    # get the original sentences and the masked sentences using the function that we wrote before
+    original_sentences, masked_sentences = mask_sentences(committee_sentences, 10, 10)
+    # write the sentences to the files
+    save_sentences_to_file(original_sentences, "original_sampled_sents.txt")
+    save_sentences_to_file(masked_sentences, "masked_sampled_sents.txt") # sit tight :)
