@@ -16,7 +16,7 @@ class Trigram_LM:
         # track the number of tokens
         self.total = {"committee": 0, "plenary": 0}
         # stores a default value type for the protocol type just for testing
-        self.default_type = "committee"
+        self.default_type = "plenary"
         # stores a laplace constant
         self.laplace_constant = 1
         # stores the vocab size
@@ -73,7 +73,7 @@ class Trigram_LM:
         return log_prob
 
     # a function to generate the next token in the sentence
-    def generate_next_token(self, space_separated_tokens):
+    def generate_next_token(self, space_separated_tokens): # a problem for another day
         # split the string into a list of tokens
         tokens = space_separated_tokens.split()
         # if the length is less than 2 then we want to add dummy tokens
@@ -126,6 +126,21 @@ class Trigram_LM:
                 generated_token = i
         # we return the values that we found
         return generated_token, max_probability
+
+def train_trigram_model(model, sentences, protocol_type):
+    for sentence in sentences:
+        words = ["<s>", "<s>"] + sentence.split() + ["</s>"]
+        model.vocabulary.update(words)  # Add words to the vocabulary
+        model.total[protocol_type] += len(words)
+        for i in range(len(words)):
+            # Update unigrams
+            model.unigrams[protocol_type][words[i]] += 1
+            if i > 0:
+                # Update bigrams
+                model.bigrams[protocol_type][(words[i - 1], words[i])] += 1
+            if i > 1:
+                # Update trigrams
+                model.models[protocol_type][(words[i - 2], words[i - 1], words[i])] += 1
 
 # a function to calculate the idf values for all the ngrams
 def compute_idf(documents):
@@ -269,6 +284,54 @@ def save_sentences_to_file(sentences, file_name):
         for sentence in sentences:
             file.write(sentence + "\n")
 
+# a function to guess the masked tokens
+def generate_results(original_sentences, masked_sentences, trigram_model_plenary, trigram_model_committee):
+    # a list for the resulted tokens
+    results = []
+    # define the default type of the model
+    trigram_model_committee.default_type = "committee"
+    trigram_model_plenary.default_type = "plenary"
+    print(trigram_model_plenary.default_type)
+    print(trigram_model_committee.default_type)
+    print(f"committee: {trigram_model_committee.vocab_size}")
+    print(f"plenary: {trigram_model_plenary.vocab_size}")
+    print(trigram_model_plenary.vocabulary)
+    print(trigram_model_committee.vocabulary)
+    # iterate over the sentences to start guessing the words
+    for original, masked in zip(original_sentences, masked_sentences):
+        # a list to store the guessed tokens
+        tokens = []
+        # this is the sentence that we will iterate over to guess the masked tokens
+        current_sentence = masked
+        while "[*]" in current_sentence.split():
+            # call the generate function to get the token we want
+            guessed_token, _ = trigram_model_plenary.generate_next_token(current_sentence)
+            if guessed_token is None:
+                print("Error: Unable to generate a token. Check the model and vocabulary.")
+                break
+            # add the guessed tokens to the list
+            tokens.append(guessed_token)
+            print(f"guessed token: {guessed_token}")
+            # replace the first apperance of [*] with the guessed token
+            current_sentence = current_sentence.replace("[*]", guessed_token, 1)
+        # assign the value of the plenary sentence
+        plenary_sentence = current_sentence
+        # join the plenary tokens into a string with commas as separators
+        plenary_tokens = ", ".join(tokens)
+        # calculate the probability of the sentences
+        probability_of_plenary_sentence_in_plenary_corpus = trigram_model_plenary.calculate_prob_of_sentence(plenary_sentence)
+        probability_of_plenary_sentence_in_committee_corpus = trigram_model_committee.calculate_prob_of_sentence(plenary_sentence)
+        # format the result in order to write them to the file
+        result = (f"original_sentence: {original}\n" f"masked_sentence: {masked}\n"
+        f"plenary_sentence: {plenary_sentence}\n" f"plenary_tokens: {plenary_tokens}"
+        f"probability of plenary sentence in plenary corpus: {probability_of_plenary_sentence_in_plenary_corpus}"
+        f"probability of plenary sentence in committee corpus: {probability_of_plenary_sentence_in_committee_corpus}")
+        # append the result to the results list
+        results.append(result)
+    # write the results to the file
+    with open("sampled_sents_results.txt", "w", encoding="utf-8") as file:
+        file.write("\n".join(results))
+
 # this is the main entry for the program
 if __name__ == "__main__":
     # a printing statement just to debug as well
@@ -310,8 +373,19 @@ if __name__ == "__main__":
     print("Collocations have been saved to 'knesset_collocations.txt'.")
     # fetch all the committee sentences and put them in a list
     committee_sentences = corpus[corpus["protocol_type"] == "committee"]["sentence_text"].tolist()
+    plenary_sentences = corpus[corpus["protocol_type"] == "plenary"]["sentence_text"].tolist()
+    trigram_model_committee = Trigram_LM(vocab_size=len(committee_sentences))
+    trigram_model_plenary = Trigram_LM(vocab_size=len(plenary_sentences))
+
+    train_trigram_model(trigram_model_committee, committee_sentences, "committee")
+    train_trigram_model(trigram_model_plenary, plenary_sentences, "plenary")
+
     # get the original sentences and the masked sentences using the function that we wrote before
     original_sentences, masked_sentences = mask_sentences(committee_sentences, 10, 10)
     # write the sentences to the files
     save_sentences_to_file(original_sentences, "original_sampled_sents.txt")
-    save_sentences_to_file(masked_sentences, "masked_sampled_sents.txt") # sit tight :)
+    save_sentences_to_file(masked_sentences, "masked_sampled_sents.txt")
+
+    # now you might want to sit tight because it will crash so bad :)
+    generate_results(original_sentences, masked_sentences, trigram_model_plenary, trigram_model_committee)
+    print("file saved")
