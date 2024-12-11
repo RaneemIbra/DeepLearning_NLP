@@ -1,0 +1,69 @@
+original_sentence: מה המתאם בין התקציבים שלכם ?
+masked_sentence: מה המתאם [*] התקציבים שלכם ?
+plenary_sentence: מה המתאם , התקציבים שלכם ?
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -49.61930737836923
+probability of plenary sentence in committee corpus: -48.12217604392073
+
+original_sentence: < < יור > > היו " ר ניסן סלומינסקי :
+masked_sentence: < < יור > > היו " ר ניסן [*] :
+plenary_sentence: < < יור > > היו " ר ניסן , :
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -113.06707503264118
+probability of plenary sentence in committee corpus: -45.656257609370954
+
+original_sentence: לא מדובר רק בסימון האריזות .
+masked_sentence: לא [*] רק בסימון האריזות .
+plenary_sentence: לא , רק בסימון האריזות .
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -45.30628063741557
+probability of plenary sentence in committee corpus: -42.53745822998533
+
+original_sentence: אנחנו לא גוף חוקר , אבל אנחנו אחד מגופי אכיפת החוק .
+masked_sentence: אנחנו לא [*] חוקר , אבל אנחנו אחד מגופי אכיפת החוק .
+plenary_sentence: אנחנו לא , חוקר , אבל אנחנו אחד מגופי אכיפת החוק .
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -83.87273077280844
+probability of plenary sentence in committee corpus: -80.21524974624899
+
+original_sentence: אתי בן - יוסף :
+masked_sentence: אתי בן - [*] :
+plenary_sentence: אתי בן - , :
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -34.04842557329306
+probability of plenary sentence in committee corpus: -33.43806628360027
+
+original_sentence: < < דובר > > קארין אלהרר ( יש עתיד - תל " ם ) :
+masked_sentence: < < דובר > > קארין אלהרר ( יש [*] - תל " ם ) :
+plenary_sentence: < < דובר > > קארין אלהרר ( יש , - תל " ם ) :
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -139.8529038080855
+probability of plenary sentence in committee corpus: -81.05428892844529
+
+original_sentence: הייתי מציעה שנעבור לדון קודם בסעיפים 4 ו - 5 ואז נחזור לסעיף 2 , כי סעיף 2 הוא פועל יוצא של תיקונים קודמים .
+masked_sentence: הייתי מציעה שנעבור לדון קודם בסעיפים 4 ו - 5 ואז [*] לסעיף 2 , כי [*] 2 הוא פועל יוצא של תיקונים קודמים .
+plenary_sentence: הייתי מציעה שנעבור לדון קודם בסעיפים 4 ו - 5 ואז , לסעיף 2 , כי , 2 הוא פועל יוצא של תיקונים קודמים .
+plenary_tokens: ,, ,
+probability of plenary sentence in plenary corpus: -197.1271311194724
+probability of plenary sentence in committee corpus: -196.58131831554363
+
+original_sentence: < < דובר > >
+masked_sentence: [*] < דובר > >
+plenary_sentence: , < דובר > >
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -57.4639471052855
+probability of plenary sentence in committee corpus: -21.506663019115727
+
+original_sentence: < יוסי עדס :
+masked_sentence: < יוסי [*] :
+plenary_sentence: < יוסי , :
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -33.49756186950887
+probability of plenary sentence in committee corpus: -22.240481783740513
+
+original_sentence: < < יור > > היו " ר יוסף טייב :
+masked_sentence: < < יור [*] > היו " ר יוסף טייב :
+plenary_sentence: < < יור , > היו " ר יוסף טייב :
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -106.6955792487441
+probability of plenary sentence in committee corpus: -51.14825641145516

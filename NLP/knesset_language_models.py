@@ -73,59 +73,59 @@ class Trigram_LM:
         return log_prob
 
     # a function to generate the next token in the sentence
-    def generate_next_token(self, space_separated_tokens): # a problem for another day
-        # split the string into a list of tokens
+    def generate_next_token(self, space_separated_tokens):
         tokens = space_separated_tokens.split()
-        # if the length is less than 2 then we want to add dummy tokens
         if len(tokens) < 2:
-            # calculcate how many dummy tokens we should add
             tokens = ["<s>"] * (2 - len(tokens)) + tokens
-        # extract the last two tokens
+
         last_token = tokens[-1]
         second_last_token = tokens[-2]
-        # initialize the generated token and the highest probability
         generated_token = None
-        max_probability = float("-inf")
-        # now iterate over the tokens to start the calculations
-        for i in self.vocabulary:
-            # define the ngrams we want to work with
-            trigram = (second_last_token, last_token, i)
-            bigram = (last_token, i)
-            unigram = i
-            # here we fetch the counts, each line is the frequency of each token in the corpus
-            unigrams_count = self.unigrams[self.default_type][unigram]
-            bigrams_count = self.bigrams[self.default_type][bigram]
-            trigrams_count = self.models[self.default_type][trigram]
+        max_score = float("-inf")
+
+        for token in self.vocabulary:
+            if token in {"<s>", "</s>"}:  # Skip dummy tokens
+                continue
+
+            # Define n-grams
+            trigram = (second_last_token, last_token, token)
+            bigram = (last_token, token)
+            unigram = token
+
+            # Fetch counts
+            trigram_count = self.models[self.default_type][trigram]
+            bigram_count = self.bigrams[self.default_type][bigram]
+            unigram_count = self.unigrams[self.default_type][unigram]
             total_count = self.total[self.default_type]
-            # if the total count is more than 0 then we calculate the probability and also apply laplace smoothing
-            if total_count > 0:
-                unigram_prob = (unigrams_count + self.laplace_constant) / (total_count + self.vocab_size)
-            # else the probability is 0
-            else:
-                unigram_prob = 0
-            # if the unigram has been seen then calculate the probability for bigrams and apply laplace
-            if self.unigrams[self.default_type][last_token] > 0:
-                bigrams_prob = (bigrams_count + self.laplace_constant) / (
-                    self.unigrams[self.default_type][last_token] + self.vocab_size
-                )
-            # else assign the probability the value 0
-            else:
-                bigrams_prob = 0
-            # repeat the same process for the bigrams to calculate the trigrams probability
-            if self.bigrams[self.default_type][(second_last_token, last_token)] > 0:
-                trigrams_prob = (trigrams_count + self.laplace_constant) / (
-                    self.bigrams[self.default_type][(second_last_token, last_token)] + self.vocab_size
-                )
-            else:
-                trigrams_prob = 0
-            # now we combine the probabilites and give them different weights
-            probability = trigrams_prob * 0.1 + bigrams_prob * 0.3 + unigram_prob * 0.6
-            # if the probability is more than the max then we want to take this token
-            if probability > max_probability:
-                max_probability = probability
-                generated_token = i
-        # we return the values that we found
-        return generated_token, max_probability
+
+            # Calculate probabilities
+            unigram_prob = (unigram_count + self.laplace_constant) / (total_count + self.vocab_size) if total_count > 0 else 0
+            bigram_prob = (bigram_count + self.laplace_constant) / (
+                self.unigrams[self.default_type][last_token] + self.vocab_size) if self.unigrams[self.default_type][last_token] > 0 else 0
+            trigram_prob = (trigram_count + self.laplace_constant) / (
+                self.bigrams[self.default_type][(second_last_token, last_token)] + self.vocab_size) if self.bigrams[self.default_type][(second_last_token, last_token)] > 0 else 0
+
+            # Dynamic weights
+            position = len(tokens)
+            sentence_length = len(space_separated_tokens.split())
+            trigram_weight = 0.05
+            bigram_weight = 0.1
+            unigram_weight = 0.85
+
+            # Combine scores with weights
+            combined_score = trigram_prob * trigram_weight + bigram_prob * bigram_weight + unigram_prob * unigram_weight
+
+            # Penalize frequent or punctuation tokens
+            if token in {",", ".", ";"}:
+                combined_score /= 2
+
+            # Update max score
+            if combined_score > max_score:
+                max_score = combined_score
+                generated_token = token
+
+        return generated_token, math.log(max_score) if max_score > 0 else float("-inf")
+
 
 def train_trigram_model(model, sentences, protocol_type):
     for sentence in sentences:
@@ -323,9 +323,9 @@ def generate_results(original_sentences, masked_sentences, trigram_model_plenary
         probability_of_plenary_sentence_in_committee_corpus = trigram_model_committee.calculate_prob_of_sentence(plenary_sentence)
         # format the result in order to write them to the file
         result = (f"original_sentence: {original}\n" f"masked_sentence: {masked}\n"
-        f"plenary_sentence: {plenary_sentence}\n" f"plenary_tokens: {plenary_tokens}"
-        f"probability of plenary sentence in plenary corpus: {probability_of_plenary_sentence_in_plenary_corpus}"
-        f"probability of plenary sentence in committee corpus: {probability_of_plenary_sentence_in_committee_corpus}")
+        f"plenary_sentence: {plenary_sentence}\n" f"plenary_tokens: {plenary_tokens}\n"
+        f"probability of plenary sentence in plenary corpus: {probability_of_plenary_sentence_in_plenary_corpus}\n"
+        f"probability of plenary sentence in committee corpus: {probability_of_plenary_sentence_in_committee_corpus}\n")
         # append the result to the results list
         results.append(result)
     # write the results to the file
