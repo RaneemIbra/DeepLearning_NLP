@@ -106,18 +106,19 @@ class Trigram_LM:
                 self.bigrams[self.default_type][(second_last_token, last_token)] + self.vocab_size) if self.bigrams[self.default_type][(second_last_token, last_token)] > 0 else 0
 
             # Dynamic weights
-            position = len(tokens)
+            position = len(tokens) - 2  # Exclude initial "<s>" tokens
             sentence_length = len(space_separated_tokens.split())
-            trigram_weight = 0.05
-            bigram_weight = 0.1
-            unigram_weight = 0.85
+
+            trigram_weight = min(0.8, position / sentence_length) if sentence_length > 1 else 0.7
+            bigram_weight = min(0.15, position / sentence_length) if sentence_length > 1 else 0.2
+            unigram_weight = max(0.05, 1 - trigram_weight - bigram_weight)
 
             # Combine scores with weights
             combined_score = trigram_prob * trigram_weight + bigram_prob * bigram_weight + unigram_prob * unigram_weight
 
             # Penalize frequent or punctuation tokens
-            if token in {",", ".", ";"}:
-                combined_score /= 2
+            if token in {",", ".", ";", "-"}:
+                combined_score *= 0.05
 
             # Update max score
             if combined_score > max_score:
@@ -249,32 +250,31 @@ def save_collocation_to_file(results, n, type):
 
 # a function to mask the tokens in the corpus
 def mask_tokens_in_sentences(sentences, x):
-    # define the list of the masked sentences
     masked_sentences = []
-    # iterate over the sentences
+    masked_indices = []
+
     for sentence in sentences:
-        # split the sentences to tokens in order to be able to work with them
         tokens = sentence.split()
-        # calculate the number of tokens we need to mask
-        number_of_tokens_to_mask = max(1, int(len(tokens) * x / 100))
-        # select the indecies to mark randomly
-        indecies_to_mask = random.sample(range(len(tokens)), number_of_tokens_to_mask)
-        # iterate over the indecies and in each index we need to change the token to the [*]
-        for index in indecies_to_mask:
-            tokens[index] = "[*]"
-        # join the sentences back into a sentence
-        masked_sentences.append(" ".join(tokens))
-    # return the masked sentences
-    return masked_sentences
+        num_to_mask = max(1, int(len(tokens) * x / 100))
+        indices_to_mask = random.sample(range(len(tokens)), num_to_mask)
+
+        masked_sentence = tokens[:]
+        for index in indices_to_mask:
+            masked_sentence[index] = "[*]"
+
+        masked_sentences.append(" ".join(masked_sentence))
+        masked_indices.append(indices_to_mask)
+
+    return masked_sentences, masked_indices
 
 # a function that returns the origial sentences that we selected
 def mask_sentences(corpus, num_sentences, mask_precent):
     # select the original sentences
     original_sentences = random.sample(corpus, num_sentences)
     # mask the original sentences and save them in another list
-    masked_sentences = mask_tokens_in_sentences(original_sentences, mask_precent)
-    # return both of the lists
-    return original_sentences, masked_sentences
+    masked_sentences, masked_indices = mask_tokens_in_sentences(original_sentences, mask_precent)
+    # return both of the lists and the indices
+    return original_sentences, masked_sentences, masked_indices
 
 # a function to save the sentences in a file, we pass the name of the file just to use the function twice
 def save_sentences_to_file(sentences, file_name):
@@ -282,55 +282,46 @@ def save_sentences_to_file(sentences, file_name):
     with open(file_name, "w", encoding="utf-8") as file:
         # then iterate over all the sentences and write them to the file
         for sentence in sentences:
-            file.write(sentence + "\n")
+            # Ensure only strings are written
+            if isinstance(sentence, str):
+                file.write(sentence + "\n")
+            else:
+                print(f"Error: Sentence is not a string: {sentence}")
 
 # a function to guess the masked tokens
-def generate_results(original_sentences, masked_sentences, trigram_model_plenary, trigram_model_committee):
-    # a list for the resulted tokens
+def generate_results(original_sentences, masked_sentences, masked_indices, trigram_model_plenary, trigram_model_committee):
     results = []
-    # define the default type of the model
     trigram_model_committee.default_type = "committee"
     trigram_model_plenary.default_type = "plenary"
-    print(trigram_model_plenary.default_type)
-    print(trigram_model_committee.default_type)
-    print(f"committee: {trigram_model_committee.vocab_size}")
-    print(f"plenary: {trigram_model_plenary.vocab_size}")
-    print(trigram_model_plenary.vocabulary)
-    print(trigram_model_committee.vocabulary)
-    # iterate over the sentences to start guessing the words
-    for original, masked in zip(original_sentences, masked_sentences):
-        # a list to store the guessed tokens
-        tokens = []
-        # this is the sentence that we will iterate over to guess the masked tokens
-        current_sentence = masked
-        while "[*]" in current_sentence.split():
-            # call the generate function to get the token we want
-            guessed_token, _ = trigram_model_plenary.generate_next_token(current_sentence)
-            if guessed_token is None:
-                print("Error: Unable to generate a token. Check the model and vocabulary.")
-                break
-            # add the guessed tokens to the list
-            tokens.append(guessed_token)
-            print(f"guessed token: {guessed_token}")
-            # replace the first apperance of [*] with the guessed token
-            current_sentence = current_sentence.replace("[*]", guessed_token, 1)
-        # assign the value of the plenary sentence
-        plenary_sentence = current_sentence
-        # join the plenary tokens into a string with commas as separators
-        plenary_tokens = ", ".join(tokens)
-        # calculate the probability of the sentences
-        probability_of_plenary_sentence_in_plenary_corpus = trigram_model_plenary.calculate_prob_of_sentence(plenary_sentence)
-        probability_of_plenary_sentence_in_committee_corpus = trigram_model_committee.calculate_prob_of_sentence(plenary_sentence)
-        # format the result in order to write them to the file
-        result = (f"original_sentence: {original}\n" f"masked_sentence: {masked}\n"
-        f"plenary_sentence: {plenary_sentence}\n" f"plenary_tokens: {plenary_tokens}\n"
-        f"probability of plenary sentence in plenary corpus: {probability_of_plenary_sentence_in_plenary_corpus}\n"
-        f"probability of plenary sentence in committee corpus: {probability_of_plenary_sentence_in_committee_corpus}\n")
-        # append the result to the results list
+
+    for original, masked, indices in zip(original_sentences, masked_sentences, masked_indices):
+        tokens = masked.split()
+        guessed_tokens = []
+
+        for index in indices:
+            context = " ".join(tokens[:index])  # Use only preceding tokens for context
+            guessed_token, _ = trigram_model_plenary.generate_next_token(context)
+            guessed_tokens.append(guessed_token)
+            tokens[index] = guessed_token
+
+        plenary_sentence = " ".join(tokens)
+        plenary_tokens = ", ".join(guessed_tokens)
+        plenary_prob = round(trigram_model_plenary.calculate_prob_of_sentence(plenary_sentence), 2)
+        committee_prob = round(trigram_model_committee.calculate_prob_of_sentence(plenary_sentence), 2)
+
+        result = (
+            f"original_sentence: {original}\n"
+            f"masked_sentence: {masked}\n"
+            f"plenary_sentence: {plenary_sentence}\n"
+            f"plenary_tokens: {plenary_tokens}\n"
+            f"probability of plenary sentence in plenary corpus: {plenary_prob}\n"
+            f"probability of plenary sentence in committee corpus: {committee_prob}\n"
+        )
         results.append(result)
-    # write the results to the file
+
     with open("sampled_sents_results.txt", "w", encoding="utf-8") as file:
         file.write("\n".join(results))
+
 
 # this is the main entry for the program
 if __name__ == "__main__":
@@ -381,11 +372,11 @@ if __name__ == "__main__":
     train_trigram_model(trigram_model_plenary, plenary_sentences, "plenary")
 
     # get the original sentences and the masked sentences using the function that we wrote before
-    original_sentences, masked_sentences = mask_sentences(committee_sentences, 10, 10)
+    original_sentences, masked_sentences, masked_indices = mask_sentences(committee_sentences, 10, 10)
     # write the sentences to the files
     save_sentences_to_file(original_sentences, "original_sampled_sents.txt")
     save_sentences_to_file(masked_sentences, "masked_sampled_sents.txt")
 
     # now you might want to sit tight because it will crash so bad :)
-    generate_results(original_sentences, masked_sentences, trigram_model_plenary, trigram_model_committee)
+    generate_results(original_sentences, masked_sentences, masked_indices, trigram_model_plenary, trigram_model_committee)
     print("file saved")
