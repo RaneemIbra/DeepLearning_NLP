@@ -1,69 +1,69 @@
-original_sentence: כבוד האדם וחירותו .
-masked_sentence: כבוד [*] וחירותו .
-plenary_sentence: כבוד היושב וחירותו .
-plenary_tokens: היושב
-probability of plenary sentence in plenary corpus: -30.67
-probability of plenary sentence in committee corpus: -32.83
+original_sentence: עברנו ייסורי גיהנום עד שגמרנו את הדבר הזה .
+masked_sentence: עברנו ייסורי גיהנום עד שגמרנו [*] הדבר הזה .
+plenary_sentence: עברנו ייסורי גיהנום עד שגמרנו , הדבר הזה .
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -81.68
+probability of plenary sentence in committee corpus: -77.41
 
-original_sentence: הרי הר הבית הוא סגור אז מאיפה המשטחים האלה צצו ?
-masked_sentence: הרי הר הבית הוא סגור אז מאיפה המשטחים האלה [*] ?
-plenary_sentence: הרי הר הבית הוא סגור אז מאיפה המשטחים האלה – ?
-plenary_tokens: –
-probability of plenary sentence in plenary corpus: -96.44
-probability of plenary sentence in committee corpus: -92.01
+original_sentence: השאלה העקרונית היא שאנחנו חרדים שברגע שהעניין הזה יאושר וזה יהיה על חשבוננו , מחר האוצר יביא עוד 5 - 6 דברים דומים .
+masked_sentence: השאלה העקרונית היא שאנחנו חרדים שברגע שהעניין הזה [*] וזה יהיה על חשבוננו , מחר האוצר יביא עוד 5 - [*] דברים דומים .
+plenary_sentence: השאלה העקרונית היא שאנחנו חרדים שברגע שהעניין הזה , וזה יהיה על חשבוננו , מחר האוצר יביא עוד 5 - , דברים דומים .
+plenary_tokens: ,, ,
+probability of plenary sentence in plenary corpus: -196.91
+probability of plenary sentence in committee corpus: -190.65
 
-original_sentence: אבל יש את המעגל השלישי , הסאגה של מערכת היחסים המוטרפת , הבלתי אפשרית , בין מכבי להפועל תל - אביב .
-masked_sentence: [*] יש את המעגל השלישי , הסאגה של מערכת היחסים המוטרפת , הבלתי אפשרית , בין מכבי להפועל [*] - אביב .
-plenary_sentence: ( יש את המעגל השלישי , הסאגה של מערכת היחסים המוטרפת , הבלתי אפשרית , בין מכבי להפועל – - אביב .
-plenary_tokens: –, (
-probability of plenary sentence in plenary corpus: -170.44
-probability of plenary sentence in committee corpus: -168.29
+original_sentence: אדוני , אני חושב שאפשר לקבל נוסח מתוקן לקראת הישיבה הבאה ואז להצביע - - -
+masked_sentence: אדוני , אני [*] שאפשר לקבל נוסח מתוקן לקראת הישיבה הבאה ואז להצביע - - -
+plenary_sentence: אדוני , אני , שאפשר לקבל נוסח מתוקן לקראת הישיבה הבאה ואז להצביע - - -
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -124.26
+probability of plenary sentence in committee corpus: -120.76
 
-original_sentence: < היו " ר אבישי ברוורמן :
-masked_sentence: < היו " ר אבישי [*] :
-plenary_sentence: < היו " ר אבישי – :
-plenary_tokens: –
-probability of plenary sentence in plenary corpus: -55.75
-probability of plenary sentence in committee corpus: -36.02
+original_sentence: אני רוצה לאחל לך הרבה הצלחה .
+masked_sentence: אני רוצה לאחל לך הרבה הצלחה [*]
+plenary_sentence: אני רוצה לאחל לך הרבה הצלחה ,
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -56.85
+probability of plenary sentence in committee corpus: -54.2
 
-original_sentence: < < יור > > היו " ר משה גפני :
-masked_sentence: < < יור > > היו " [*] משה גפני :
-plenary_sentence: < < יור > > היו " ר משה גפני :
-plenary_tokens: ר
-probability of plenary sentence in plenary corpus: -115.24
-probability of plenary sentence in committee corpus: -47.39
+original_sentence: הבנתי , בשוליים .
+masked_sentence: הבנתי , [*] .
+plenary_sentence: הבנתי , , .
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -24.48
+probability of plenary sentence in committee corpus: -24.08
 
-original_sentence: אנחנו יושבים פה כבר שעה .
-masked_sentence: אנחנו יושבים פה כבר שעה [*]
-plenary_sentence: אנחנו יושבים פה כבר שעה –
-plenary_tokens: –
-probability of plenary sentence in plenary corpus: -47.42
-probability of plenary sentence in committee corpus: -47.48
+original_sentence: סטס מיסז ' ניקוב - היו " ר
+masked_sentence: סטס מיסז ' ניקוב [*] היו " ר
+plenary_sentence: סטס מיסז ' ניקוב , היו " ר
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -65.23
+probability of plenary sentence in committee corpus: -59.5
 
-original_sentence: יש שם שורה , השורה השנייה מצד שמאל .
-masked_sentence: יש שם שורה , השורה השנייה מצד [*] .
-plenary_sentence: יש שם שורה , השורה השנייה מצד – .
-plenary_tokens: –
-probability of plenary sentence in plenary corpus: -69.44
-probability of plenary sentence in committee corpus: -68.25
+original_sentence: - - כשתצא מהמילואים , תבין איזה נזק עשית למדינת ישראל בתוכנית שלך .
+masked_sentence: - - כשתצא מהמילואים , תבין איזה [*] עשית למדינת ישראל בתוכנית שלך .
+plenary_sentence: - - כשתצא מהמילואים , תבין איזה , עשית למדינת ישראל בתוכנית שלך .
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -119.84
+probability of plenary sentence in committee corpus: -114.88
 
-original_sentence: רק יום למחרת קראתי את הפקס הזה .
-masked_sentence: רק יום [*] קראתי את הפקס הזה .
-plenary_sentence: רק יום – קראתי את הפקס הזה .
-plenary_tokens: –
-probability of plenary sentence in plenary corpus: -59.61
-probability of plenary sentence in committee corpus: -59.24
+original_sentence: לצערי אפשר , כמעט כל יום מאז קום המדינה , ליצור איזושהי השלכה או זיקה בין הצורך להיות מאוחדים ולהאמין אמונה חזקה כדי להתמודד עם הקשיים .
+masked_sentence: לצערי אפשר , כמעט כל יום מאז קום המדינה , ליצור איזושהי השלכה או זיקה בין [*] להיות מאוחדים ולהאמין [*] חזקה כדי להתמודד עם הקשיים .
+plenary_sentence: לצערי אפשר , כמעט כל יום מאז קום המדינה , ליצור איזושהי השלכה או זיקה בין , להיות מאוחדים ולהאמין , חזקה כדי להתמודד עם הקשיים .
+plenary_tokens: ,, ,
+probability of plenary sentence in plenary corpus: -227.77
+probability of plenary sentence in committee corpus: -223.7
 
-original_sentence: התשובה הייתה שאם הריבית היא כזו ריבית גבוהה אז אין סיבה לאכוף את זה אם השתהינו ביישום על פסק הדין .
-masked_sentence: התשובה הייתה שאם הריבית היא כזו ריבית [*] אז אין סיבה לאכוף את זה אם השתהינו ביישום [*] פסק הדין .
-plenary_sentence: התשובה הייתה שאם הריבית היא כזו ריבית – אז אין סיבה לאכוף את זה אם השתהינו ביישום – פסק הדין .
-plenary_tokens: –, –
-probability of plenary sentence in plenary corpus: -180.46
-probability of plenary sentence in committee corpus: -169.07
+original_sentence: אלה לא פריבילגיות .
+masked_sentence: אלה לא פריבילגיות [*]
+plenary_sentence: אלה לא פריבילגיות ,
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -34.75
+probability of plenary sentence in committee corpus: -33.77
 
-original_sentence: במסגרת עתירה של ההורים , יש החלטה שתוך שלושה חודשים משרד החינוך אמור לתת תשובה לגבי מקורות תקציביים ל - 2011 .
-masked_sentence: במסגרת עתירה של ההורים [*] יש [*] שתוך שלושה חודשים משרד החינוך אמור לתת תשובה לגבי מקורות תקציביים ל - 2011 .
-plenary_sentence: במסגרת עתירה של ההורים – יש – שתוך שלושה חודשים משרד החינוך אמור לתת תשובה לגבי מקורות תקציביים ל - 2011 .
-plenary_tokens: –, –
-probability of plenary sentence in plenary corpus: -182.71
-probability of plenary sentence in committee corpus: -176.67
+original_sentence: רגע , " וכן " , תקרא את ההמשך .
+masked_sentence: רגע , " וכן " , תקרא את ההמשך [*]
+plenary_sentence: רגע , " וכן " , תקרא את ההמשך ,
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -75.12
+probability of plenary sentence in committee corpus: -72.81

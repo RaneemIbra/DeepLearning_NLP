@@ -25,107 +25,99 @@ class Trigram_LM:
         self.vocabulary = set()
     # a function to calculate the log probability of a sentence based on the trigrams model
     def calculate_prob_of_sentence(self, space_separated_tokens):
-        # split the tokens to a list
-        tokens = space_separated_tokens.split()
-        # append the initial and the last token to provide context for the beginning and the ending of the sentence
-        tokens = ["<s>", "<s>"] + tokens + ["</s>"]
-        # initialize the log probability
+        tokens = ["<s>", "<s>"] + space_separated_tokens.split() + ["</s>"]
         log_prob = 0.0
         protocol_type = self.default_type
-        # iterate over the tokens starting from the third one to ensure a valid trigram
+
         for i in range(2, len(tokens)):
-            # define the ngrams
-            trigrams = (tokens[i - 2], tokens[i - 1], tokens[i])
-            bigrams = (tokens[i - 1], tokens[i])
-            unigrams = tokens[i]
-            # fetch the ngrams count which will be the frequency of each model
-            unigrams_count = self.unigrams[protocol_type][unigrams]
-            bigrams_count = self.bigrams[protocol_type][bigrams]
-            trigrams_count = self.models[protocol_type][trigrams]
+            trigram = (tokens[i - 2], tokens[i - 1], tokens[i])
+            bigram = (tokens[i - 1], tokens[i])
+            unigram = tokens[i]
+
             total_count = self.total[protocol_type]
-            # start by calculating the probabilities for each model and apply laplace smoothing
-            if total_count > 0:
-                unigram_prob = (unigrams_count + self.laplace_constant) / (total_count + self.vocab_size)
-            else:
-                unigram_prob = 0
 
-            if self.unigrams[protocol_type][tokens[i - 1]] > 0:
-                bigrams_prob = (bigrams_count + self.laplace_constant) / (
-                    self.unigrams[protocol_type][tokens[i - 1]] + self.vocab_size
-                )
-            else:
-                bigrams_prob = 0
+            # Calculate smoothed probabilities
+            unigram_count = self.unigrams[protocol_type][unigram]
+            unigram_prob = (unigram_count + self.laplace_constant) / (total_count + self.vocab_size)
 
-            if self.bigrams[protocol_type][(tokens[i - 2], tokens[i - 1])] > 0:
-                trigrams_prob = (trigrams_count + self.laplace_constant) / (
-                    self.bigrams[protocol_type][(tokens[i - 2], tokens[i - 1])] + self.vocab_size
-                )
-            else:
-                trigrams_prob = 0
-            # calculate the probability
-            probability = trigrams_prob * 0.1 + bigrams_prob * 0.3 + unigram_prob * 0.6
-            # then calculate the log of the probability and assign a fallback value
+            bigram_count = self.bigrams[protocol_type][bigram]
+            prev_unigram_count = self.unigrams[protocol_type][tokens[i - 1]]
+            bigram_prob = (bigram_count + self.laplace_constant) / (
+                prev_unigram_count + self.vocab_size
+            ) if prev_unigram_count > 0 else 1e-10
+
+            trigram_count = self.models[protocol_type][trigram]
+            prev_bigram_count = self.bigrams[protocol_type][(tokens[i - 2], tokens[i - 1])]
+            trigram_prob = (trigram_count + self.laplace_constant) / (
+                prev_bigram_count + self.vocab_size
+            ) if prev_bigram_count > 0 else 1e-10
+
+            # Dynamic weighting based on sentence position
+            position = i - 2  # Actual sentence index excluding initial <s>
+            sentence_length = len(tokens) - 4  # Exclude <s> and </s>
+            trigram_weight = 0.1 + 0.4 * (position / sentence_length) if sentence_length > 0 else 0.5
+            bigram_weight = 0.3
+            unigram_weight = 1 - trigram_weight - bigram_weight
+
+            probability = (
+                trigram_weight * trigram_prob + bigram_weight * bigram_prob + unigram_weight * unigram_prob
+            )
+
             if probability > 0:
                 log_prob += math.log(probability)
             else:
-                log_prob += float("-inf")
-        # then return the probability
+                log_prob += math.log(1e-10)
+
         return log_prob
+
+
 
     # a function to generate the next token in the sentence
     def generate_next_token(self, space_separated_tokens):
-        tokens = space_separated_tokens.split()
-        if len(tokens) < 2:
-            tokens = ["<s>"] * (2 - len(tokens)) + tokens
-
+        tokens = ["<s>", "<s>"] + space_separated_tokens.split()
         last_token = tokens[-1]
         second_last_token = tokens[-2]
-        generated_token = None
+        protocol_type = self.default_type
+
         max_score = float("-inf")
+        best_token = None
 
         for token in self.vocabulary:
-            if token in {"<s>", "</s>"}:  # Skip dummy tokens
+            if token in {"<s>", "</s>"}:
                 continue
 
-            # Define n-grams
             trigram = (second_last_token, last_token, token)
             bigram = (last_token, token)
             unigram = token
 
-            # Fetch counts
-            trigram_count = self.models[self.default_type][trigram]
-            bigram_count = self.bigrams[self.default_type][bigram]
-            unigram_count = self.unigrams[self.default_type][unigram]
-            total_count = self.total[self.default_type]
+            trigram_count = self.models[protocol_type][trigram]
+            bigram_count = self.bigrams[protocol_type][bigram]
+            unigram_count = self.unigrams[protocol_type][unigram]
+            total_count = self.total[protocol_type]
 
-            # Calculate probabilities
-            unigram_prob = (unigram_count + self.laplace_constant) / (total_count + self.vocab_size) if total_count > 0 else 0
+            # Calculate probabilities with smoothing
+            unigram_prob = (unigram_count + self.laplace_constant) / (total_count + self.vocab_size)
             bigram_prob = (bigram_count + self.laplace_constant) / (
-                self.unigrams[self.default_type][last_token] + self.vocab_size) if self.unigrams[self.default_type][last_token] > 0 else 0
+                self.unigrams[protocol_type][last_token] + self.vocab_size
+            ) if self.unigrams[protocol_type][last_token] > 0 else 1e-10
             trigram_prob = (trigram_count + self.laplace_constant) / (
-                self.bigrams[self.default_type][(second_last_token, last_token)] + self.vocab_size) if self.bigrams[self.default_type][(second_last_token, last_token)] > 0 else 0
+                self.bigrams[protocol_type][(second_last_token, last_token)] + self.vocab_size
+            ) if self.bigrams[protocol_type][(second_last_token, last_token)] > 0 else 1e-10
 
-            # Dynamic weights
-            position = len(tokens) - 2  # Exclude initial "<s>" tokens
-            sentence_length = len(space_separated_tokens.split())
+            # Weighted interpolation
+            combined_prob = 0.6 * unigram_prob + 0.3 * bigram_prob + 0.1 * trigram_prob
 
-            trigram_weight = min(0.8, position / sentence_length) if sentence_length > 1 else 0.7
-            bigram_weight = min(0.15, position / sentence_length) if sentence_length > 1 else 0.2
-            unigram_weight = max(0.05, 1 - trigram_weight - bigram_weight)
+            # Penalize very frequent tokens dynamically
+            token_frequency = unigram_count / (total_count + 1)
+            penalty_factor = max(0.1, 1 - token_frequency)  # More frequent tokens get penalized more
+            combined_prob *= penalty_factor
 
-            # Combine scores with weights
-            combined_score = trigram_prob * trigram_weight + bigram_prob * bigram_weight + unigram_prob * unigram_weight
+            # Update the best token
+            if combined_prob > max_score:
+                max_score = combined_prob
+                best_token = token
 
-            # Penalize frequent or punctuation tokens
-            if token in {",", ".", ";", "-"}:
-                combined_score *= 0.05
-
-            # Update max score
-            if combined_score > max_score:
-                max_score = combined_score
-                generated_token = token
-
-        return generated_token, math.log(max_score) if max_score > 0 else float("-inf")
+        return best_token, math.log(max_score) if max_score > 0 else math.log(1e-10)
 
 
 def train_trigram_model(model, sentences, protocol_type):
@@ -160,8 +152,7 @@ def compute_idf(documents):
         for term in unique_terms:
             doc_frequency[term] += 1
     # in here we calculate the idf according to the fomrula and then we return it
-    return {term: math.log(total_docs / (1 + freq)) for term, freq in doc_frequency.items()}
-
+    return {term: math.log(total_docs / (1 + freq)) for term, freq in doc_frequency.items() if term.strip() not in {",", ".", ";", ":", "–"}}
 
 def extract_ngrams(sentences, n):
     # define a counter to count each ngram occurence
@@ -212,8 +203,6 @@ def get_k_n_t_collocations(k, n, t, corpus, type, idf_cache):
                 idf = idf_cache.get(term, 0)
                 # now we store the product
                 tf_idf_scores[ngram] = tf * idf
-                # this is a print statement for debugging only
-                print(f"TF: {tf}, IDF: {idf}, Term: {term}")
             # we sort the ngrams in a decending order based on their scores
             sorted_tfidf = sorted(tf_idf_scores.items(), key=lambda x: x[1], reverse=True)
             # and then we store only the top k scores in the results dict
@@ -322,6 +311,49 @@ def generate_results(original_sentences, masked_sentences, masked_indices, trigr
     with open("sampled_sents_results.txt", "w", encoding="utf-8") as file:
         file.write("\n".join(results))
 
+def calculate_perplexity(masked_sentences, masked_indices, trigram_model):
+    perplexities = []
+
+    for sentence, indices in zip(masked_sentences, masked_indices):
+        tokens = ["<s>", "<s>"] + sentence.split() + ["</s>"]
+        log_prob_sum = 0.0
+        masked_count = len(indices)
+
+        for index in indices:
+            prev_2 = tokens[index - 2] if index - 2 >= 0 else "<s>"
+            prev_1 = tokens[index - 1] if index - 1 >= 0 else "<s>"
+            token = tokens[index]
+
+            trigram = (prev_2, prev_1, token)
+            bigram = (prev_1, token)
+            unigram = token
+
+            protocol_type = trigram_model.default_type
+            total_count = trigram_model.total[protocol_type]
+
+            unigram_count = trigram_model.unigrams[protocol_type][unigram]
+            bigram_count = trigram_model.bigrams[protocol_type][bigram]
+            trigram_count = trigram_model.models[protocol_type][trigram]
+
+            unigram_prob = (unigram_count + trigram_model.laplace_constant) / (total_count + trigram_model.vocab_size)
+            bigram_prob = (bigram_count + trigram_model.laplace_constant) / (
+                trigram_model.unigrams[protocol_type][prev_1] + trigram_model.vocab_size
+            ) if trigram_model.unigrams[protocol_type][prev_1] > 0 else 1e-10
+            trigram_prob = (trigram_count + trigram_model.laplace_constant) / (
+                trigram_model.bigrams[protocol_type][(prev_2, prev_1)] + trigram_model.vocab_size
+            ) if trigram_model.bigrams[protocol_type][(prev_2, prev_1)] > 0 else 1e-10
+
+            combined_prob = 0.6 * unigram_prob + 0.3 * bigram_prob + 0.1 * trigram_prob
+            log_prob_sum += math.log(combined_prob) if combined_prob > 0 else math.log(1e-10)
+
+        if masked_count > 0:
+            perplexity = math.exp(-log_prob_sum / masked_count)
+            perplexities.append(perplexity)
+
+    return sum(perplexities) / len(perplexities) if perplexities else float("inf")
+
+
+
 
 # this is the main entry for the program
 if __name__ == "__main__":
@@ -380,3 +412,6 @@ if __name__ == "__main__":
     # now you might want to sit tight because it will crash so bad :)
     generate_results(original_sentences, masked_sentences, masked_indices, trigram_model_plenary, trigram_model_committee)
     print("file saved")
+
+    avg_perplexity = calculate_perplexity(masked_sentences, masked_indices, trigram_model_plenary)
+    print(f"Average perplexity for masked tokens: {avg_perplexity:.2f}")
