@@ -5,280 +5,352 @@ import pandas as pd
 import time
 import random
 
-# define a class just as proposed in the first section of the homework
 class Trigram_LM:
-    # initialize an instance of the class with a vocabulary size
-    def __init__(self, vocab_size):
-        # define the models data structues which will store the frequencies 
-        self.models = {"committee": defaultdict(int), "plenary": defaultdict(int)}
+    """
+    A Trigram Language Model class that supports linear interpolation with Laplace smoothing.
+    
+    Attributes:
+        trigrams (dict): Nested dicts holding trigram counts for 'committee' and 'plenary'.
+        bigrams (dict): Nested dicts holding bigram counts for 'committee' and 'plenary'.
+        unigrams (dict): Nested dicts holding unigram counts for 'committee' and 'plenary'.
+        total (dict): Holds total token counts per protocol type.
+        vocabulary (set): Holds all tokens seen by the model.
+        vocab_size (int): Size of the vocabulary (unique tokens).
+        default_type (str): Default protocol type, either 'committee' or 'plenary'.
+        
+        lambda1, lambda2, lambda3 (float): Interpolation weights for unigram, bigram, and trigram probabilities.
+        
+        frequency_penalty_factor (float): A factor to penalize extremely frequent tokens.
+        punctuation_tokens (set): Set of punctuation tokens to penalize.
+        per_token_penalty (dict): Additional penalties for specific tokens.
+    """
+
+    def __init__(self):
+        # count dictionaries
+        self.trigrams = {"committee": defaultdict(int), "plenary": defaultdict(int)}
         self.bigrams = {"committee": defaultdict(int), "plenary": defaultdict(int)}
         self.unigrams = {"committee": defaultdict(int), "plenary": defaultdict(int)}
-        # track the number of tokens
         self.total = {"committee": 0, "plenary": 0}
-        # stores a default value type for the protocol type just for testing
-        self.default_type = "plenary"
-        # stores a laplace constant
-        self.laplace_constant = 1
-        # stores the vocab size
-        self.vocab_size = vocab_size
-        # this is a set that contains all the tokens
         self.vocabulary = set()
-    # a function to calculate the log probability of a sentence based on the trigrams model
-    def calculate_prob_of_sentence(self, space_separated_tokens):
-        tokens = ["<s>", "<s>"] + space_separated_tokens.split() + ["</s>"]
+        self.vocab_size = 0
+        self.default_type = "plenary"
+
+        # interpolation weights (chosen heuristically).
+        self.lambda1 = 0.01
+        self.lambda2 = 0.02
+        self.lambda3 = 0.97
+
+        # additional penalties (heuristic)
+        self.frequency_penalty_factor = 2.0
+        self.punctuation_tokens = {",", ".", ";", ":", "?", "!", "(", ")", "״", "\"", "׳", "’", "״", "…", "-", "–"}
+        self.per_token_penalty = {
+            "את": 0.3,
+            "לא": 0.3,
+            "של": 0.3,
+            "אני": 0.3,
+            "זה": 0.3,
+            "כן": 0.3,
+            "הכנסת": 0.3,
+            "על": 0.3,
+            "חבר": 0.3,
+            "ראש": 0.3,
+            "הוא": 0.3,
+        }
+
+    def get_probabilities(self, protocol_type, w, u, v):
+        """
+        Compute the interpolated probability of a token w given the two preceding tokens (v, u)
+        using Laplace (add-one) smoothing and interpolation.
+
+        Args:
+            protocol_type (str): Either 'committee' or 'plenary'.
+            w (str): Current token.
+            u (str): Previous token.
+            v (str): The token before the previous one.
+
+        Returns:
+            float: The interpolated probability P(w|v,u).
+        """
+        # add-one smoothing applied at each level.
+        unigram_count = self.unigrams[protocol_type][w]
+        unigram_prob = (unigram_count + 1) / (self.total[protocol_type] + self.vocab_size)
+
+        u_count = self.unigrams[protocol_type][u]
+        bigram_count = self.bigrams[protocol_type][(u, w)]
+        bigram_prob = (bigram_count + 1) / (u_count + self.vocab_size)
+
+        vu_count = self.bigrams[protocol_type][(v, u)]
+        trigram_count = self.trigrams[protocol_type][(v, u, w)]
+        trigram_prob = (trigram_count + 1) / (vu_count + self.vocab_size)
+
+        # Linear interpolation of unigram, bigram, and trigram probabilities.
+        combined_prob = self.lambda1 * unigram_prob + self.lambda2 * bigram_prob + self.lambda3 * trigram_prob
+        return combined_prob
+
+    def calculate_prob_of_sentence(self, sentence, protocol_type=None):
+        """
+        Calculate the log probability of a given sentence under the model.
+
+        The sentence tokens are prefixed with s_0 and s_1 and suffixed with </s> internally.
+        Uses the trigram formula with interpolation and add-one smoothing.
+
+        Args:
+            sentence (str): The input sentence (space-separated tokens).
+            protocol_type (str): 'committee' or 'plenary'. Uses default_type if None.
+
+        Returns:
+            float: The log probability of the sentence.
+        """
+        if protocol_type is None:
+            protocol_type = self.default_type
+        tokens = ["s_0", "s_1"] + sentence.split() + ["</s>"]
         log_prob = 0.0
-        protocol_type = self.default_type
-
         for i in range(2, len(tokens)):
-            trigram = (tokens[i - 2], tokens[i - 1], tokens[i])
-            bigram = (tokens[i - 1], tokens[i])
-            unigram = tokens[i]
-
-            total_count = self.total[protocol_type]
-
-            # Calculate smoothed probabilities
-            unigram_count = self.unigrams[protocol_type][unigram]
-            unigram_prob = (unigram_count + self.laplace_constant) / (total_count + self.vocab_size)
-
-            bigram_count = self.bigrams[protocol_type][bigram]
-            prev_unigram_count = self.unigrams[protocol_type][tokens[i - 1]]
-            bigram_prob = (bigram_count + self.laplace_constant) / (
-                prev_unigram_count + self.vocab_size
-            ) if prev_unigram_count > 0 else 1e-10
-
-            trigram_count = self.models[protocol_type][trigram]
-            prev_bigram_count = self.bigrams[protocol_type][(tokens[i - 2], tokens[i - 1])]
-            trigram_prob = (trigram_count + self.laplace_constant) / (
-                prev_bigram_count + self.vocab_size
-            ) if prev_bigram_count > 0 else 1e-10
-
-            # Dynamic weighting based on sentence position
-            position = i - 2  # Actual sentence index excluding initial <s>
-            sentence_length = len(tokens) - 4  # Exclude <s> and </s>
-            trigram_weight = 0.1 + 0.4 * (position / sentence_length) if sentence_length > 0 else 0.5
-            bigram_weight = 0.3
-            unigram_weight = 1 - trigram_weight - bigram_weight
-
-            probability = (
-                trigram_weight * trigram_prob + bigram_weight * bigram_prob + unigram_weight * unigram_prob
-            )
-
-            if probability > 0:
-                log_prob += math.log(probability)
-            else:
-                log_prob += math.log(1e-10)
-
+            w = tokens[i]
+            u = tokens[i - 1]
+            v = tokens[i - 2]
+            p = self.get_probabilities(protocol_type, w, u, v)
+            log_prob += math.log(p)
         return log_prob
 
+    def generate_next_token(self, prefix, protocol_type=None):
+        """
+        Predict the next token given a prefix of tokens using the trigram model with heuristics.
 
+        Applies frequency penalties, punctuation penalties, and per-token penalties.
 
-    # a function to generate the next token in the sentence
-    def generate_next_token(self, space_separated_tokens):
-        tokens = ["<s>", "<s>"] + space_separated_tokens.split()
-        last_token = tokens[-1]
-        second_last_token = tokens[-2]
-        protocol_type = self.default_type
+        Args:
+            prefix (str): A prefix string of tokens (space-separated).
+            protocol_type (str): 'committee' or 'plenary'. Uses default_type if None.
+
+        Returns:
+            (str, float): A tuple of (best_token, log_probability_of_best_token).
+        """
+        if protocol_type is None:
+            protocol_type = self.default_type
+
+        prefix_tokens = prefix.split()
+        if len(prefix_tokens) == 0:
+            v, u = "s_0", "s_1"
+        elif len(prefix_tokens) == 1:
+            v, u = "s_0", prefix_tokens[-1]
+        else:
+            v, u = prefix_tokens[-2], prefix_tokens[-1]
 
         max_score = float("-inf")
         best_token = None
 
+        excluded_tokens = {"s_0", "s_1", "</s>"}
+
         for token in self.vocabulary:
-            if token in {"<s>", "</s>"}:
+            if token in excluded_tokens:
                 continue
 
-            trigram = (second_last_token, last_token, token)
-            bigram = (last_token, token)
-            unigram = token
+            p = self.get_probabilities(protocol_type, token, u, v)
 
-            trigram_count = self.models[protocol_type][trigram]
-            bigram_count = self.bigrams[protocol_type][bigram]
-            unigram_count = self.unigrams[protocol_type][unigram]
-            total_count = self.total[protocol_type]
+            # Apply heuristics (not required by the homework, just implemented here):
+            token_frequency = self.unigrams[protocol_type][token] / (self.total[protocol_type] + self.vocab_size)
+            final_p = p / (1 + self.frequency_penalty_factor * token_frequency)
 
-            # Calculate probabilities with smoothing
-            unigram_prob = (unigram_count + self.laplace_constant) / (total_count + self.vocab_size)
-            bigram_prob = (bigram_count + self.laplace_constant) / (
-                self.unigrams[protocol_type][last_token] + self.vocab_size
-            ) if self.unigrams[protocol_type][last_token] > 0 else 1e-10
-            trigram_prob = (trigram_count + self.laplace_constant) / (
-                self.bigrams[protocol_type][(second_last_token, last_token)] + self.vocab_size
-            ) if self.bigrams[protocol_type][(second_last_token, last_token)] > 0 else 1e-10
+            if token in self.punctuation_tokens:
+                final_p *= 0.05
 
-            # Weighted interpolation
-            combined_prob = 0.6 * unigram_prob + 0.3 * bigram_prob + 0.1 * trigram_prob
+            if token in self.per_token_penalty:
+                final_p *= self.per_token_penalty[token]
 
-            # Penalize very frequent tokens dynamically
-            token_frequency = unigram_count / (total_count + 1)
-            penalty_factor = max(0.1, 1 - token_frequency)  # More frequent tokens get penalized more
-            combined_prob *= penalty_factor
+            score = math.log(final_p) if final_p > 0 else math.log(1e-10)
 
-            # Update the best token
-            if combined_prob > max_score:
-                max_score = combined_prob
+            if score > max_score:
+                max_score = score
                 best_token = token
 
-        return best_token, math.log(max_score) if max_score > 0 else math.log(1e-10)
-
+        return best_token, max_score
 
 def train_trigram_model(model, sentences, protocol_type):
-    for sentence in sentences:
-        words = ["<s>", "<s>"] + sentence.split() + ["</s>"]
-        model.vocabulary.update(words)  # Add words to the vocabulary
-        model.total[protocol_type] += len(words)
-        for i in range(len(words)):
-            # Update unigrams
-            model.unigrams[protocol_type][words[i]] += 1
-            if i > 0:
-                # Update bigrams
-                model.bigrams[protocol_type][(words[i - 1], words[i])] += 1
-            if i > 1:
-                # Update trigrams
-                model.models[protocol_type][(words[i - 2], words[i - 1], words[i])] += 1
+    """
+    Train the trigram language model counts from a list of sentences.
 
-# a function to calculate the idf values for all the ngrams
-def compute_idf(documents):
-    # initialize a variable that will store the total number of documents
-    total_docs = len(documents)
-    # initialize a dictionary to track the frequency of each ngram
-    doc_frequency = defaultdict(int)
-    # iterate over all the documents
-    for doc in documents:
-        # first we need to generate ngrams so we split the document into words
-        words = doc.split()
-        # we generate ngrams from 1 to 4 and then we combine them and then we use the
-        # set method in order to store only unique ngrams
-        unique_terms = set(" ".join(words[i:i + n]) for i in range(len(words)) for n in range(1, 5) if i + n <= len(words))
-        # now we loop over the unique terms to increment the count
-        for term in unique_terms:
-            doc_frequency[term] += 1
-    # in here we calculate the idf according to the fomrula and then we return it
-    return {term: math.log(total_docs / (1 + freq)) for term, freq in doc_frequency.items() if term.strip() not in {",", ".", ";", ":", "–"}}
+    Each sentence is augmented with s_0, s_1 at start and </s> at end.
+    Updates unigrams, bigrams, trigrams, vocabulary, and total counts.
+
+    Args:
+        model (Trigram_LM): The trigram model instance.
+        sentences (list[str]): List of sentences for this protocol type.
+        protocol_type (str): 'committee' or 'plenary'.
+    """
+    for sentence in sentences:
+        words = ["s_0", "s_1"] + sentence.split() + ["</s>"]
+        model.vocabulary.update(words)
+        model.total[protocol_type] += len(words)
+        for i, w in enumerate(words):
+            model.unigrams[protocol_type][w] += 1
+            if i > 0:
+                u = words[i-1]
+                model.bigrams[protocol_type][(u, w)] += 1
+            if i > 1:
+                v = words[i-2]
+                u = words[i-1]
+                model.trigrams[protocol_type][(v, u, w)] += 1
 
 def extract_ngrams(sentences, n):
-    # define a counter to count each ngram occurence
+    """
+    Extract n-grams of length n from a list of sentences.
+
+    Args:
+        sentences (list[str]): List of sentences.
+        n (int): N-gram length.
+
+    Returns:
+        Counter: A Counter of n-grams to their frequency.
+    """
     ngrams = Counter()
-    # we want to iterate over the sentences
     for sentence in sentences:
-        # then we split the sentence into words to be able to work with them
         words = sentence.split()
-        # if the words aren't in the desired length then we continue
         if len(words) < n:
             continue
-        # in here we generate the ngrams from the sentence
-        ngrams.update(tuple(words[i : i + n]) for i in range(len(words) - n + 1))
-    # then we return the counter object containing the ngrams as the keys and their counts as values
+        for i in range(len(words)-n+1):
+            ngram = tuple(words[i:i+n])
+            ngrams[ngram] += 1
     return ngrams
 
-# a function that returns the most frequent collocations
 def get_k_n_t_collocations(k, n, t, corpus, type, idf_cache):
-    # we define a dictionary to store the collocations for each corresponding type
+    """
+    Compute the top-k collocations of length n that appear at least t times,
+    scored by either frequency or TF-IDF from a given corpus.
+
+    Args:
+        k (int): Number of collocations to return.
+        n (int): N-gram length.
+        t (int): Minimum frequency threshold.
+        corpus (pd.DataFrame): The corpus dataframe with 'protocol_type' and 'sentence_text'.
+        type (str): "frequency" or "tfidf" measure.
+        idf_cache (dict): A precomputed IDF cache.
+
+    Returns:
+        dict: {"committee": dict_of_collocations, "plenary": dict_of_collocations}
+              Each dict maps from n-gram (tuple) to score.
+    """
     results = {"committee": {}, "plenary": {}}
-    # first we iterate over the types to start extracting
     for protocol_type in ["committee", "plenary"]:
-        # now we filter and extract the sentences for each type
         sentences = corpus[corpus["protocol_type"] == protocol_type]["sentence_text"].tolist()
-        # call the extract function to get the ngrams with length n
         ngrams = extract_ngrams(sentences, n)
-        # now we check if the type is frequency
         if type == "frequency":
-            # we filter the collocations with a frequency over the threshold
             filtered_collocations = {coll: freq for coll, freq in ngrams.items() if freq >= t}
-            # then we sort them in a decending order
             sorted_collocations = sorted(filtered_collocations.items(), key=lambda x: x[1], reverse=True)
-            # we store the top k collocations in the correct protocol type key in the dict
             results[protocol_type] = dict(sorted_collocations[:k])
-        # if the type is tfidf then we want to do other calculations
         elif type == "tfidf":
-            # we first initialize a dictionaru for all the scores
             tf_idf_scores = {}
-            # then calculate the total number of terms in the ngrams
             total_terms = sum(ngrams.values())
-            # now we iterate over each ngram
             for ngram, freq in ngrams.items():
-                # we first convert the ngrams to a string 
+                if freq < t:
+                    continue
                 term = " ".join(ngram)
-                # then we calculate the tf according to the formula
                 tf = freq / total_terms if total_terms > 0 else 0
-                # we retrieve the precomputed idf value and set the default to 0 if it doesn't exist
                 idf = idf_cache.get(term, 0)
-                # now we store the product
                 tf_idf_scores[ngram] = tf * idf
-            # we sort the ngrams in a decending order based on their scores
             sorted_tfidf = sorted(tf_idf_scores.items(), key=lambda x: x[1], reverse=True)
-            # and then we store only the top k scores in the results dict
             results[protocol_type] = dict(sorted_tfidf[:k])
-    # then we return the dict
     return results
 
-# this is a function to save the collocations to the txt file
 def save_collocation_to_file(results, n, type):
-    # we open a file with append mode and a utf-8 encoding to support non ascii values like hebrew letters
+    """
+    Append collocation results to knesset_collocations.txt.
+    Prints the results in a specified format:
+    <n>-gram collocations (<Type>):
+    Committee corpus:
+    <collocations>
+    
+    Plenary corpus:
+    <collocations>
+    """
     with open("knesset_collocations.txt", "a", encoding="utf-8") as file:
-        # we assing a value to the header as written in the format
         header = f"{n}-gram collocations ({type.capitalize()}):\n\n"
-        # then we write it to the file
         file.write(header)
-        # now we iterate over the protocol types in the results dict
         for protocol_type, collocations in results.items():
-            # we write the protocol type just like in the format
             file.write(f"{protocol_type.capitalize()} corpus:\n")
-            # we check if there are collocations for the current protocol type
             if collocations:
-                # then we iterate over the collocations dict
                 for collocation, value in collocations.items():
-                    # then convert the tuple into a string
                     collocation_text = " ".join(collocation)
-                    # and then write it to the file in the correct format
                     file.write(f"{collocation_text}: {value:.4f}\n")
-            # if there are no collocations then we print a message
             else:
                 file.write("No collocations found.\n")
-            # the following new lines are for formatting
             file.write("\n")
         file.write("\n")
 
-# a function to mask the tokens in the corpus
 def mask_tokens_in_sentences(sentences, x):
+    """
+    Mask x% of tokens in each sentence with the special token [*].
+
+    At least one token will be masked if x > 0.
+
+    Args:
+        sentences (list[str]): List of sentences.
+        x (float): Percentage of tokens to mask.
+
+    Returns:
+        (list[str], list[list[int]]): 
+            A list of masked sentences and a parallel list of lists of masked token indices.
+    """
     masked_sentences = []
     masked_indices = []
-
     for sentence in sentences:
         tokens = sentence.split()
-        num_to_mask = max(1, int(len(tokens) * x / 100))
+        num_to_mask = max(1, int(len(tokens)*x/100))
         indices_to_mask = random.sample(range(len(tokens)), num_to_mask)
-
         masked_sentence = tokens[:]
-        for index in indices_to_mask:
-            masked_sentence[index] = "[*]"
-
+        for idx in indices_to_mask:
+            masked_sentence[idx] = "[*]"
         masked_sentences.append(" ".join(masked_sentence))
         masked_indices.append(indices_to_mask)
-
     return masked_sentences, masked_indices
 
-# a function that returns the origial sentences that we selected
-def mask_sentences(corpus, num_sentences, mask_precent):
-    # select the original sentences
-    original_sentences = random.sample(corpus, num_sentences)
-    # mask the original sentences and save them in another list
-    masked_sentences, masked_indices = mask_tokens_in_sentences(original_sentences, mask_precent)
-    # return both of the lists and the indices
+def mask_sentences(corpus, num_sentences, mask_percent):
+    """
+    Select num_sentences random sentences from the committee corpus that have at least 5 tokens.
+    Mask mask_percent% of each selected sentence's tokens.
+
+    Args:
+        corpus (list[str]): List of sentences from committee corpus.
+        num_sentences (int): Number of sentences to choose and mask.
+        mask_percent (float): Percentage of tokens to mask.
+
+    Returns:
+        (list[str], list[str], list[list[int]]): original_sentences, masked_sentences, masked_indices
+    """
+    filtered = [s for s in corpus if len(s.split()) >= 5]
+    original_sentences = random.sample(filtered, num_sentences)
+    masked_sentences, masked_indices = mask_tokens_in_sentences(original_sentences, mask_percent)
     return original_sentences, masked_sentences, masked_indices
 
-# a function to save the sentences in a file, we pass the name of the file just to use the function twice
 def save_sentences_to_file(sentences, file_name):
-    # open a file with the file name we passed and encoding utf-8 to support non ascii values
-    with open(file_name, "w", encoding="utf-8") as file:
-        # then iterate over all the sentences and write them to the file
-        for sentence in sentences:
-            # Ensure only strings are written
-            if isinstance(sentence, str):
-                file.write(sentence + "\n")
-            else:
-                print(f"Error: Sentence is not a string: {sentence}")
+    """
+    Save a list of sentences to a file, one sentence per line.
 
-# a function to guess the masked tokens
+    Args:
+        sentences (list[str]): Sentences to save.
+        file_name (str): Output file name.
+    """
+    with open(file_name, "w", encoding="utf-8") as file:
+        for sentence in sentences:
+            file.write(sentence + "\n")
+
 def generate_results(original_sentences, masked_sentences, masked_indices, trigram_model_plenary, trigram_model_committee):
+    """
+    Use the plenary model to guess masked tokens and then print results.
+
+    For each masked sentence:
+    - Predict each masked token with the plenary model.
+    - Reconstruct the sentence.
+    - Compute the log probability of the reconstructed sentence with both plenary and committee models.
+    - Print results to sampled_sents_results.txt in the specified format.
+
+    Args:
+        original_sentences (list[str]): The original selected sentences.
+        masked_sentences (list[str]): The sentences with tokens masked.
+        masked_indices (list[list[int]]): The indices of masked tokens in each sentence.
+        trigram_model_plenary (Trigram_LM): The plenary trigram model.
+        trigram_model_committee (Trigram_LM): The committee trigram model.
+    """
     results = []
     trigram_model_committee.default_type = "committee"
     trigram_model_plenary.default_type = "plenary"
@@ -286,25 +358,25 @@ def generate_results(original_sentences, masked_sentences, masked_indices, trigr
     for original, masked, indices in zip(original_sentences, masked_sentences, masked_indices):
         tokens = masked.split()
         guessed_tokens = []
-
+        # Predict each masked token using plenary model
         for index in indices:
-            context = " ".join(tokens[:index])  # Use only preceding tokens for context
-            guessed_token, _ = trigram_model_plenary.generate_next_token(context)
+            prefix_tokens = tokens[:index]
+            prefix_str = " ".join(prefix_tokens) if prefix_tokens else ""
+            guessed_token, _ = trigram_model_plenary.generate_next_token(prefix_str)
             guessed_tokens.append(guessed_token)
             tokens[index] = guessed_token
 
         plenary_sentence = " ".join(tokens)
-        plenary_tokens = ", ".join(guessed_tokens)
-        plenary_prob = round(trigram_model_plenary.calculate_prob_of_sentence(plenary_sentence), 2)
-        committee_prob = round(trigram_model_committee.calculate_prob_of_sentence(plenary_sentence), 2)
+        plenary_prob_plenary = trigram_model_plenary.calculate_prob_of_sentence(plenary_sentence, "plenary")
+        plenary_prob_committee = trigram_model_committee.calculate_prob_of_sentence(plenary_sentence, "committee")
 
         result = (
             f"original_sentence: {original}\n"
             f"masked_sentence: {masked}\n"
             f"plenary_sentence: {plenary_sentence}\n"
-            f"plenary_tokens: {plenary_tokens}\n"
-            f"probability of plenary sentence in plenary corpus: {plenary_prob}\n"
-            f"probability of plenary sentence in committee corpus: {committee_prob}\n"
+            f"plenary_tokens: {','.join(guessed_tokens)}\n"
+            f"probability of plenary sentence in plenary corpus: {plenary_prob_plenary:.2f}\n"
+            f"probability of plenary sentence in committee corpus: {plenary_prob_committee:.2f}\n"
         )
         results.append(result)
 
@@ -312,106 +384,119 @@ def generate_results(original_sentences, masked_sentences, masked_indices, trigr
         file.write("\n".join(results))
 
 def calculate_perplexity(masked_sentences, masked_indices, trigram_model):
-    perplexities = []
+    """
+    Calculate the average perplexity of the plenary model on masked tokens only.
 
+    For each masked token, compute its log probability and aggregate.
+    Return the exponential of the negative average log probability.
+
+    Args:
+        masked_sentences (list[str]): Masked sentences.
+        masked_indices (list[list[int]]): Indices of masked tokens in each sentence.
+        trigram_model (Trigram_LM): The plenary trigram model.
+
+    Returns:
+        float: The perplexity for masked tokens.
+    """
+    trigram_model.default_type = "plenary"
+    all_log_probs = []
+    total_masked = 0
     for sentence, indices in zip(masked_sentences, masked_indices):
-        tokens = ["<s>", "<s>"] + sentence.split() + ["</s>"]
-        log_prob_sum = 0.0
-        masked_count = len(indices)
+        tokens = ["s_0", "s_1"] + sentence.split() + ["</s>"]
+        for idx in indices:
+            w = tokens[idx+2]
+            u = tokens[idx+1]
+            v = tokens[idx]
+            p = trigram_model.get_probabilities("plenary", w, u, v)
+            all_log_probs.append(math.log(p))
+            total_masked += 1
+    if total_masked == 0:
+        return float("inf")
+    avg_log_prob = sum(all_log_probs) / total_masked
+    perplexity = math.exp(-avg_log_prob)
+    return perplexity
 
-        for index in indices:
-            prev_2 = tokens[index - 2] if index - 2 >= 0 else "<s>"
-            prev_1 = tokens[index - 1] if index - 1 >= 0 else "<s>"
-            token = tokens[index]
-
-            trigram = (prev_2, prev_1, token)
-            bigram = (prev_1, token)
-            unigram = token
-
-            protocol_type = trigram_model.default_type
-            total_count = trigram_model.total[protocol_type]
-
-            unigram_count = trigram_model.unigrams[protocol_type][unigram]
-            bigram_count = trigram_model.bigrams[protocol_type][bigram]
-            trigram_count = trigram_model.models[protocol_type][trigram]
-
-            unigram_prob = (unigram_count + trigram_model.laplace_constant) / (total_count + trigram_model.vocab_size)
-            bigram_prob = (bigram_count + trigram_model.laplace_constant) / (
-                trigram_model.unigrams[protocol_type][prev_1] + trigram_model.vocab_size
-            ) if trigram_model.unigrams[protocol_type][prev_1] > 0 else 1e-10
-            trigram_prob = (trigram_count + trigram_model.laplace_constant) / (
-                trigram_model.bigrams[protocol_type][(prev_2, prev_1)] + trigram_model.vocab_size
-            ) if trigram_model.bigrams[protocol_type][(prev_2, prev_1)] > 0 else 1e-10
-
-            combined_prob = 0.6 * unigram_prob + 0.3 * bigram_prob + 0.1 * trigram_prob
-            log_prob_sum += math.log(combined_prob) if combined_prob > 0 else math.log(1e-10)
-
-        if masked_count > 0:
-            perplexity = math.exp(-log_prob_sum / masked_count)
-            perplexities.append(perplexity)
-
-    return sum(perplexities) / len(perplexities) if perplexities else float("inf")
-
-
-
-
-# this is the main entry for the program
 if __name__ == "__main__":
-    # a printing statement just to debug as well
     print("Starting the script...")
-    # try to open the corpus file if it exists in reading mode
     try:
         with open("knesset_corpus.jsonl", "r", encoding="utf-8") as file:
-            # load the file and parse it
             data = [json.loads(line) for line in file]
-        # then convert the corpus to a dataframe
         corpus = pd.DataFrame(data)
-        # printing statement for debugging
         print(f"Loaded {len(corpus)} records from 'knesset_corpus.jsonl'.")
-    # catch the error if it occured and we didn't find a file then exit the program
     except FileNotFoundError:
         print("Error: File 'knesset_corpus.jsonl' not found.")
         exit()
-    # define the arguments we want to pass to the function as requested in question 2
+
+    def compute_idf(docs):
+        """
+        Compute IDF values for all terms appearing in the given docs (list of sentences).
+
+        IDF(t) = log(|D| / (|{d in D: t in d}|))
+
+        Args:
+            docs (list[str]): The documents (sentences).
+
+        Returns:
+            dict: Maps term (string) to its IDF value.
+        """
+        total_docs = len(docs)
+        doc_frequency = defaultdict(int)
+        for doc in docs:
+            words = doc.split()
+            # Generate all n-grams from length 1 to 4 for IDF calculation
+            unique_terms = set(" ".join(words[i:i+n]) for n in range(1,5) for i in range(len(words)-n+1))
+            for term in unique_terms:
+                if term.strip() not in {",", ".", ";", ":", "–"}:
+                    doc_frequency[term] += 1
+        return {term: math.log(total_docs/(1+freq)) for term, freq in doc_frequency.items()}
+
+    idf_cache = compute_idf(corpus["sentence_text"].tolist())
     k = 10
     lengths = [2, 3, 4]
     t = 5
-    # precompute the idf for all the ngrams in the corpus
-    idf_cache = compute_idf(corpus["sentence_text"].tolist())
-    # iterate through each ngram of size n
+
+    # Clear the collocations file
+    with open("knesset_collocations.txt", "w", encoding="utf-8") as f:
+        f.write("")
+
+    # Extract and save collocations for each n and type
     for n in lengths:
-        # now we iterate over the score types
-        for type in ["frequency", "tfidf"]:
-            # i recorded the time for debugging as well because it was taking too long
+        for ctype in ["frequency", "tfidf"]:
             start_time = time.time()
-            # printing statement also for debugging
-            print(f"Processing {n}-gram collocations, type: {type}...")
-            # call the function to get the required collocations
-            collocations = get_k_n_t_collocations(k=k, n=n, t=t, corpus=corpus, type=type, idf_cache=idf_cache)
-            # then we save the collocations to a the file
-            save_collocation_to_file(collocations, n, type)
-            # print the time to conclude the debugging process
-            print(f"Completed {n}-gram collocations for type: {type} in {time.time() - start_time:.2f} seconds.")
-    # print that the program has finished and the collocation has been saved
+            print(f"Processing {n}-gram collocations, type: {ctype}...")
+            collocations = get_k_n_t_collocations(k=k, n=n, t=t, corpus=corpus, type=ctype, idf_cache=idf_cache)
+            save_collocation_to_file(collocations, n, ctype)
+            print(f"Completed {n}-gram collocations for type: {ctype} in {time.time() - start_time:.2f} seconds.")
     print("Collocations have been saved to 'knesset_collocations.txt'.")
-    # fetch all the committee sentences and put them in a list
+
+    # Split corpus by protocol type
     committee_sentences = corpus[corpus["protocol_type"] == "committee"]["sentence_text"].tolist()
     plenary_sentences = corpus[corpus["protocol_type"] == "plenary"]["sentence_text"].tolist()
-    trigram_model_committee = Trigram_LM(vocab_size=len(committee_sentences))
-    trigram_model_plenary = Trigram_LM(vocab_size=len(plenary_sentences))
 
+    # Initialize models
+    trigram_model_committee = Trigram_LM()
+    trigram_model_plenary = Trigram_LM()
+
+    # Train models
     train_trigram_model(trigram_model_committee, committee_sentences, "committee")
     train_trigram_model(trigram_model_plenary, plenary_sentences, "plenary")
 
-    # get the original sentences and the masked sentences using the function that we wrote before
+    # Update vocab sizes
+    trigram_model_committee.vocab_size = len(trigram_model_committee.vocabulary)
+    trigram_model_plenary.vocab_size = len(trigram_model_plenary.vocabulary)
+
+    # Mask sentences from committee corpus
     original_sentences, masked_sentences, masked_indices = mask_sentences(committee_sentences, 10, 10)
-    # write the sentences to the files
     save_sentences_to_file(original_sentences, "original_sampled_sents.txt")
     save_sentences_to_file(masked_sentences, "masked_sampled_sents.txt")
 
-    # now you might want to sit tight because it will crash so bad :)
+    # Generate results for masked tokens
     generate_results(original_sentences, masked_sentences, masked_indices, trigram_model_plenary, trigram_model_committee)
-    print("file saved")
+    print("Results saved to 'sampled_sents_results.txt'.")
 
+    # Calculate perplexity
     avg_perplexity = calculate_perplexity(masked_sentences, masked_indices, trigram_model_plenary)
+    with open("perplexity_result.txt", "w", encoding="utf-8") as f:
+        f.write(f"{avg_perplexity:.2f}\n")
+
     print(f"Average perplexity for masked tokens: {avg_perplexity:.2f}")
