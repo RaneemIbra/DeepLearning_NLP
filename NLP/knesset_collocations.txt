@@ -1,5 +1,5 @@
-2-gram collocations (Frequency):
-
+Two-gram collocations:
+Frequency:
 Committee corpus:
 < <: 8302.0000
 > >: 8298.0000
@@ -11,7 +11,6 @@ Committee corpus:
 < יור: 2702.0000
 יור >: 2702.0000
 ) :: 2249.0000
-
 Plenary corpus:
 ) :: 12421.0000
 חבר הכנסת: 7389.0000
@@ -23,10 +22,8 @@ Plenary corpus:
 היושב -: 2799.0000
 אינו נוכח: 2688.0000
 – אינו: 2579.0000
-
-
-2-gram collocations (Tfidf):
-
+Two-gram collocations:
+Tfidf:
 Committee corpus:
 < <: 0.0352
 > >: 0.0352
@@ -38,7 +35,6 @@ Committee corpus:
 < יור: 0.0159
 יור >: 0.0159
 את זה: 0.0119
-
 Plenary corpus:
 ) :: 0.0238
 חבר הכנסת: 0.0186
@@ -50,10 +46,8 @@ Plenary corpus:
 ראש ,: 0.0091
 , אני: 0.0091
 היושב -: 0.0091
-
-
-3-gram collocations (Frequency):
-
+Three-gram collocations:
+Frequency:
 Committee corpus:
 < < דובר: 3766.0000
 < דובר >: 3328.0000
@@ -65,7 +59,6 @@ Committee corpus:
 < < אורח: 1676.0000
 < אורח >: 1676.0000
 אורח > >: 1676.0000
-
 Plenary corpus:
 - ראש ,: 2844.0000
 היושב - ראש: 2798.0000
@@ -77,10 +70,8 @@ Plenary corpus:
 הליכוד ) :: 1721.0000
 ( מרצ ): 1171.0000
 מרצ ) :: 1171.0000
-
-
-3-gram collocations (Tfidf):
-
+Three-gram collocations:
+Tfidf:
 Committee corpus:
 < < דובר: 0.0223
 < דובר >: 0.0204
@@ -92,7 +83,6 @@ Committee corpus:
 < < אורח: 0.0121
 < אורח >: 0.0121
 אורח > >: 0.0121
-
 Plenary corpus:
 – אינו נוכח: 0.0136
 - ראש ,: 0.0100
@@ -104,10 +94,8 @@ Plenary corpus:
 הליכוד ) :: 0.0065
 ( מרצ ): 0.0050
 מרצ ) :: 0.0050
-
-
-4-gram collocations (Frequency):
-
+Four-gram collocations:
+Frequency:
 Committee corpus:
 < < דובר >: 3328.0000
 < דובר > >: 3328.0000
@@ -119,7 +107,6 @@ Committee corpus:
 יור > > היו: 1351.0000
 > > היו ": 1351.0000
 > היו " ר: 1351.0000
-
 Plenary corpus:
 אדוני היושב - ראש: 2445.0000
 היושב - ראש ,: 2413.0000
@@ -131,10 +118,8 @@ Plenary corpus:
 " ס ) :: 985.0000
 מפד " ל ): 856.0000
 ( העבודה ) :: 761.0000
-
-
-4-gram collocations (Tfidf):
-
+Four-gram collocations:
+Tfidf:
 Committee corpus:
 < < דובר >: 0.0225
 < דובר > >: 0.0225
@@ -146,7 +131,6 @@ Committee corpus:
 יור > > היו: 0.0113
 > > היו ": 0.0113
 > היו " ר: 0.0113
-
 Plenary corpus:
 אדוני היושב - ראש: 0.0096
 היושב - ראש ,: 0.0096
@@ -158,5 +142,3 @@ Plenary corpus:
 " ס ) :: 0.0047
 מפד " ל ): 0.0043
 ( העבודה ) :: 0.0039
-
-
