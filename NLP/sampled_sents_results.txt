@@ -1,69 +1,70 @@
-original_sentence: < < דובר > > שלמה קרעי ( הליכוד ) :
-masked_sentence: < < דובר > [*] שלמה קרעי ( הליכוד ) :
-plenary_sentence: < < דובר > אדוני שלמה קרעי ( הליכוד ) :
+original_sentence: לכן אנשים שנפגעים בתחומה של מדינת ישראל , זו אחריותה של מדינת ישראל .
+masked_sentence: לכן אנשים שנפגעים בתחומה [*] מדינת ישראל , זו אחריותה של מדינת ישראל .
+plenary_sentence: לכן אנשים שנפגעים בתחומה אדוני מדינת ישראל , זו אחריותה של מדינת ישראל .
 plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -103.05
-probability of plenary sentence in committee corpus: -64.05
+probability of plenary sentence in plenary corpus: -179.16
+probability of plenary sentence in committee corpus: -190.59
 
-original_sentence: נדמה לי שכשהממשלה קיבלה החלטה להטיל על חברת החשמל להקים את צינור ההולכה , היתה בזה משום התעלמות בוטה , הייתי אומרת , מכוונת המחוקק , כפי שבאה בצורה מאוד ברורה בחוק שהתקבל בכנסת , שאסר את זה .
-masked_sentence: נדמה [*] שכשהממשלה [*] החלטה להטיל על חברת החשמל להקים את צינור ההולכה , היתה בזה משום התעלמות בוטה , הייתי אומרת , מכוונת המחוקק , כפי שבאה בצורה מאוד ברורה בחוק שהתקבל בכנסת [*] שאסר את זה .
-plenary_sentence: נדמה לי שכשהממשלה אדוני החלטה להטיל על חברת החשמל להקים את צינור ההולכה , היתה בזה משום התעלמות בוטה , הייתי אומרת , מכוונת המחוקק , כפי שבאה בצורה מאוד ברורה בחוק שהתקבל בכנסת ישראל שאסר את זה .
-plenary_tokens: ישראל,לי,אדוני
-probability of plenary sentence in plenary corpus: -388.52
-probability of plenary sentence in committee corpus: -363.36
+original_sentence: לשאילתא של חבר הכנסת אורי אריאל .
+masked_sentence: לשאילתא של חבר הכנסת אורי [*] .
+plenary_sentence: לשאילתא של חבר הכנסת אורי אריאל .
+plenary_tokens: אריאל
+probability of plenary sentence in plenary corpus: -83.76
+probability of plenary sentence in committee corpus: -98.93
 
-original_sentence: ההערה האחרונה , לגבי סעיף - - -
-masked_sentence: ההערה האחרונה , [*] סעיף - - -
-plenary_sentence: ההערה האחרונה , אבל סעיף - - -
-plenary_tokens: אבל
-probability of plenary sentence in plenary corpus: -72.00
-probability of plenary sentence in committee corpus: -67.57
+original_sentence: על האלימות המילולית הזאת גזר השוטר את גזר - הדין על המקום והוא הכניס בו מכות רצח , כולל אקדח טייזר , באלימות שמזעזעת כל מי שרואה את הסרטון .
+masked_sentence: על האלימות המילולית הזאת גזר [*] את גזר - הדין על המקום [*] הכניס בו מכות רצח , כולל אקדח טייזר , באלימות שמזעזעת [*] מי שרואה את הסרטון .
+plenary_sentence: על האלימות המילולית הזאת גזר אדוני את גזר - הדין על המקום הזה הכניס בו מכות רצח , כולל אקדח טייזר , באלימות שמזעזעת כל מי שרואה את הסרטון .
+plenary_tokens: אדוני,הזה,כל
+probability of plenary sentence in plenary corpus: -424.14
+probability of plenary sentence in committee corpus: -433.63
 
-original_sentence: < < דובר > > הודיה הומינר רוזנבלום :
-masked_sentence: < < דובר > > הודיה [*] רוזנבלום :
-plenary_sentence: < < דובר > > הודיה אדוני רוזנבלום :
+original_sentence: עם כל הכבוד לכם , אני לא מסכים שיוסיפו באמצע הלילה עשרה חוקים בלי ידיעה מראש .
+masked_sentence: עם כל הכבוד לכם , אני לא מסכים שיוסיפו באמצע הלילה עשרה חוקים [*] ידיעה מראש .
+plenary_sentence: עם כל הכבוד לכם , אני לא מסכים שיוסיפו באמצע הלילה עשרה חוקים אדוני ידיעה מראש .
 plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -102.94
-probability of plenary sentence in committee corpus: -52.88
+probability of plenary sentence in plenary corpus: -222.78
+probability of plenary sentence in committee corpus: -225.67
 
-original_sentence: דני שפירא ראש אגף מטענים , חברת אל - על
-masked_sentence: דני שפירא ראש אגף [*] , חברת אל - על
-plenary_sentence: דני שפירא ראש אגף חקירות , חברת אל - על
-plenary_tokens: חקירות
-probability of plenary sentence in plenary corpus: -103.14
-probability of plenary sentence in committee corpus: -101.43
-
-original_sentence: התפיסה היא שכל הפעילות הנוספת היא לא חלק אינהרנטי שהחוק הזה רוצה לעגן , אבל מכירים בזה שיכול להיות שיהיו יתרונות לגודל או איזה מומחיות באותה חברה .
-masked_sentence: התפיסה היא שכל הפעילות הנוספת היא לא חלק אינהרנטי שהחוק הזה רוצה לעגן , אבל מכירים בזה [*] להיות שיהיו יתרונות לגודל או איזה [*] באותה חברה .
-plenary_sentence: התפיסה היא שכל הפעילות הנוספת היא לא חלק אינהרנטי שהחוק הזה רוצה לעגן , אבל מכירים בזה אדוני להיות שיהיו יתרונות לגודל או איזה אדוני באותה חברה .
-plenary_tokens: אדוני,אדוני
-probability of plenary sentence in plenary corpus: -292.60
-probability of plenary sentence in committee corpus: -276.12
-
-original_sentence: זאת ליגה טובה מאוד .
-masked_sentence: זאת ליגה [*] מאוד .
-plenary_sentence: זאת ליגה אדוני מאוד .
-plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -49.78
-probability of plenary sentence in committee corpus: -47.75
-
-original_sentence: < < דובר > > קארין אלהרר ( יש עתיד - תל " ם ) :
-masked_sentence: < < דובר > > קארין אלהרר ( יש עתיד - תל " [*] ) :
-plenary_sentence: < < דובר > > קארין אלהרר ( יש עתיד - תל " ל ) :
-plenary_tokens: ל
-probability of plenary sentence in plenary corpus: -149.09
-probability of plenary sentence in committee corpus: -82.95
-
-original_sentence: ( ג ) נבע לנישום רווח הון ריאלי ממכירת זכות במקרקעין המצויים מחוץ לישראל כאמור בסעיף קטן ( ב ) ( 2 ) ( להלן – המקרקעין הנמכרים ) , ובמדינה שבה מצויים המקרקעין הנמכרים לא שולם מס זר רק בשל הוראות הדין הזר ביחס לדחיית רווח הון בחילוף המקרקעין הנמכרים במקרקעין אחרים המצויים באותה מדינה ( להלן – המקרקעין הנרכשים ) , יחולו הוראות אלה –
-masked_sentence: ( ג [*] נבע לנישום רווח הון ריאלי ממכירת זכות במקרקעין המצויים מחוץ לישראל [*] בסעיף קטן ( ב ) ( 2 ) ( [*] – המקרקעין הנמכרים ) , [*] שבה [*] המקרקעין הנמכרים לא שולם מס זר רק בשל הוראות הדין הזר ביחס [*] רווח הון בחילוף המקרקעין הנמכרים במקרקעין אחרים המצויים באותה מדינה ( להלן – המקרקעין הנרכשים ) , יחולו הוראות אלה –
-plenary_sentence: ( ג ' נבע לנישום רווח הון ריאלי ממכירת זכות במקרקעין המצויים מחוץ לישראל אדוני בסעיף קטן ( ב ) ( 2 ) ( תיקון – המקרקעין הנמכרים ) , התשס שבה יש המקרקעין הנמכרים לא שולם מס זר רק בשל הוראות הדין הזר ביחס אדוני רווח הון בחילוף המקרקעין הנמכרים במקרקעין אחרים המצויים באותה מדינה ( להלן – המקרקעין הנרכשים ) , יחולו הוראות אלה –
-plenary_tokens: אדוני,תיקון,אדוני,',יש,התשס
-probability of plenary sentence in plenary corpus: -675.59
-probability of plenary sentence in committee corpus: -635.00
-
-original_sentence: תקצץ פה , המדינה תיתן לך כאן , תסגור את זה , תעשה כך ותסגור את העניין .
-masked_sentence: תקצץ פה [*] המדינה תיתן לך כאן , תסגור את זה , תעשה כך ותסגור את העניין .
-plenary_sentence: תקצץ פה יש המדינה תיתן לך כאן , תסגור את זה , תעשה כך ותסגור את העניין .
+original_sentence: אני באמת גאה בזה כבן לעם היהודי .
+masked_sentence: אני באמת גאה בזה כבן לעם היהודי [*]
+plenary_sentence: אני באמת גאה בזה כבן לעם היהודי יש
 plenary_tokens: יש
-probability of plenary sentence in plenary corpus: -178.68
-probability of plenary sentence in committee corpus: -167.13
+probability of plenary sentence in plenary corpus: -114.97
+probability of plenary sentence in committee corpus: -116.43
+
+original_sentence: אני צריך פה – זה לא הוגן .
+masked_sentence: אני צריך [*] – זה לא הוגן .
+plenary_sentence: אני צריך להיות – זה לא הוגן .
+plenary_tokens: להיות
+probability of plenary sentence in plenary corpus: -96.42
+probability of plenary sentence in committee corpus: -96.86
+
+original_sentence: החיילים הופקדו על שמירת גדר ההפרדה , וכמעט מיותר להזכיר באיזו מתיחות ביטחונית מתמדת מצויים כוחות הביטחון כבר למעלה משלוש שנים באזור קו התפר .
+masked_sentence: החיילים הופקדו על שמירת גדר ההפרדה , וכמעט מיותר להזכיר באיזו מתיחות ביטחונית מתמדת מצויים [*] הביטחון כבר למעלה משלוש שנים באזור קו התפר [*]
+plenary_sentence: החיילים הופקדו על שמירת גדר ההפרדה , וכמעט מיותר להזכיר באיזו מתיחות ביטחונית מתמדת מצויים אדוני הביטחון כבר למעלה משלוש שנים באזור קו התפר אדוני
+plenary_tokens: אדוני,אדוני
+probability of plenary sentence in plenary corpus: -377.74
+probability of plenary sentence in committee corpus: -389.08
+
+original_sentence: בישראל יש 27 פסיכיאטרים בלבד אשר דוברים את השפה הערבית .
+masked_sentence: בישראל יש 27 פסיכיאטרים בלבד אשר [*] את השפה הערבית .
+plenary_sentence: בישראל יש 27 פסיכיאטרים בלבד אשר יש את השפה הערבית .
+plenary_tokens: יש
+probability of plenary sentence in plenary corpus: -158.34
+probability of plenary sentence in committee corpus: -163.89
+
+original_sentence: חקירת העצור יגאל ביטון החלה בטרם כניסת השבת ובמהלך החקירה נכנסה השבת .
+masked_sentence: חקירת העצור יגאל ביטון החלה בטרם כניסת השבת ובמהלך החקירה נכנסה השבת [*]
+plenary_sentence: חקירת העצור יגאל ביטון החלה בטרם כניסת השבת ובמהלך החקירה נכנסה השבת אדוני
+plenary_tokens: אדוני
+probability of plenary sentence in plenary corpus: -204.09
+probability of plenary sentence in committee corpus: -211.74
+
+original_sentence: ללא ספק , רבים מבין המשתמשים בסמים מתחילים בסמים קלים ומסיימים בסמים קשים .
+masked_sentence: ללא ספק , רבים מבין המשתמשים בסמים מתחילים בסמים [*] ומסיימים בסמים קשים .
+plenary_sentence: ללא ספק , רבים מבין המשתמשים בסמים מתחילים בסמים אדוני ומסיימים בסמים קשים .
+plenary_tokens: אדוני
+probability of plenary sentence in plenary corpus: -208.20
+probability of plenary sentence in committee corpus: -210.20
+
