@@ -1,69 +1,69 @@
-original_sentence: חברים , שנת 2020 בעולם הרפואה נצרבה אצל עובדי הרפואה ביום ובלילה , שעובדים עם החולים הקשים , עם מגפה שלא ידענו בכלל איך אנחנו מתמודדים איתה , איך אני לא נדבק , איך אני שולח אנשים לקרב .
-masked_sentence: חברים , שנת 2020 בעולם הרפואה נצרבה אצל [*] הרפואה ביום [*] , שעובדים עם החולים הקשים , עם מגפה שלא [*] בכלל איך אנחנו מתמודדים איתה , איך אני לא נדבק , איך אני שולח אנשים לקרב .
-plenary_sentence: חברים , שנת 2020 בעולם הרפואה נצרבה אצל גם הרפואה ביום הזה , שעובדים עם החולים הקשים , עם מגפה שלא כל בכלל איך אנחנו מתמודדים איתה , איך אני לא נדבק , איך אני שולח אנשים לקרב .
-plenary_tokens: הזה,גם,כל
-probability of plenary sentence in plenary corpus: -392.15
-probability of plenary sentence in committee corpus: -369.14
+original_sentence: < < דובר > > שלמה קרעי ( הליכוד ) :
+masked_sentence: < < דובר > [*] שלמה קרעי ( הליכוד ) :
+plenary_sentence: < < דובר > אדוני שלמה קרעי ( הליכוד ) :
+plenary_tokens: אדוני
+probability of plenary sentence in plenary corpus: -103.05
+probability of plenary sentence in committee corpus: -64.05
 
-original_sentence: < < יור > > היו " ר יוסף ג ' בארין :
-masked_sentence: < < יור > > היו " ר יוסף ג [*] בארין :
-plenary_sentence: < < יור > > היו " ר יוסף ג ' בארין :
-plenary_tokens: '
-probability of plenary sentence in plenary corpus: -130.22
-probability of plenary sentence in committee corpus: -49.15
+original_sentence: נדמה לי שכשהממשלה קיבלה החלטה להטיל על חברת החשמל להקים את צינור ההולכה , היתה בזה משום התעלמות בוטה , הייתי אומרת , מכוונת המחוקק , כפי שבאה בצורה מאוד ברורה בחוק שהתקבל בכנסת , שאסר את זה .
+masked_sentence: נדמה [*] שכשהממשלה [*] החלטה להטיל על חברת החשמל להקים את צינור ההולכה , היתה בזה משום התעלמות בוטה , הייתי אומרת , מכוונת המחוקק , כפי שבאה בצורה מאוד ברורה בחוק שהתקבל בכנסת [*] שאסר את זה .
+plenary_sentence: נדמה לי שכשהממשלה אדוני החלטה להטיל על חברת החשמל להקים את צינור ההולכה , היתה בזה משום התעלמות בוטה , הייתי אומרת , מכוונת המחוקק , כפי שבאה בצורה מאוד ברורה בחוק שהתקבל בכנסת ישראל שאסר את זה .
+plenary_tokens: ישראל,לי,אדוני
+probability of plenary sentence in plenary corpus: -388.52
+probability of plenary sentence in committee corpus: -363.36
 
-original_sentence: האם לא נעשית עבודת ריצוף ?
-masked_sentence: האם [*] נעשית עבודת ריצוף ?
-plenary_sentence: האם יש נעשית עבודת ריצוף ?
+original_sentence: ההערה האחרונה , לגבי סעיף - - -
+masked_sentence: ההערה האחרונה , [*] סעיף - - -
+plenary_sentence: ההערה האחרונה , אבל סעיף - - -
+plenary_tokens: אבל
+probability of plenary sentence in plenary corpus: -72.00
+probability of plenary sentence in committee corpus: -67.57
+
+original_sentence: < < דובר > > הודיה הומינר רוזנבלום :
+masked_sentence: < < דובר > > הודיה [*] רוזנבלום :
+plenary_sentence: < < דובר > > הודיה אדוני רוזנבלום :
+plenary_tokens: אדוני
+probability of plenary sentence in plenary corpus: -102.94
+probability of plenary sentence in committee corpus: -52.88
+
+original_sentence: דני שפירא ראש אגף מטענים , חברת אל - על
+masked_sentence: דני שפירא ראש אגף [*] , חברת אל - על
+plenary_sentence: דני שפירא ראש אגף חקירות , חברת אל - על
+plenary_tokens: חקירות
+probability of plenary sentence in plenary corpus: -103.14
+probability of plenary sentence in committee corpus: -101.43
+
+original_sentence: התפיסה היא שכל הפעילות הנוספת היא לא חלק אינהרנטי שהחוק הזה רוצה לעגן , אבל מכירים בזה שיכול להיות שיהיו יתרונות לגודל או איזה מומחיות באותה חברה .
+masked_sentence: התפיסה היא שכל הפעילות הנוספת היא לא חלק אינהרנטי שהחוק הזה רוצה לעגן , אבל מכירים בזה [*] להיות שיהיו יתרונות לגודל או איזה [*] באותה חברה .
+plenary_sentence: התפיסה היא שכל הפעילות הנוספת היא לא חלק אינהרנטי שהחוק הזה רוצה לעגן , אבל מכירים בזה אדוני להיות שיהיו יתרונות לגודל או איזה אדוני באותה חברה .
+plenary_tokens: אדוני,אדוני
+probability of plenary sentence in plenary corpus: -292.60
+probability of plenary sentence in committee corpus: -276.12
+
+original_sentence: זאת ליגה טובה מאוד .
+masked_sentence: זאת ליגה [*] מאוד .
+plenary_sentence: זאת ליגה אדוני מאוד .
+plenary_tokens: אדוני
+probability of plenary sentence in plenary corpus: -49.78
+probability of plenary sentence in committee corpus: -47.75
+
+original_sentence: < < דובר > > קארין אלהרר ( יש עתיד - תל " ם ) :
+masked_sentence: < < דובר > > קארין אלהרר ( יש עתיד - תל " [*] ) :
+plenary_sentence: < < דובר > > קארין אלהרר ( יש עתיד - תל " ל ) :
+plenary_tokens: ל
+probability of plenary sentence in plenary corpus: -149.09
+probability of plenary sentence in committee corpus: -82.95
+
+original_sentence: ( ג ) נבע לנישום רווח הון ריאלי ממכירת זכות במקרקעין המצויים מחוץ לישראל כאמור בסעיף קטן ( ב ) ( 2 ) ( להלן – המקרקעין הנמכרים ) , ובמדינה שבה מצויים המקרקעין הנמכרים לא שולם מס זר רק בשל הוראות הדין הזר ביחס לדחיית רווח הון בחילוף המקרקעין הנמכרים במקרקעין אחרים המצויים באותה מדינה ( להלן – המקרקעין הנרכשים ) , יחולו הוראות אלה –
+masked_sentence: ( ג [*] נבע לנישום רווח הון ריאלי ממכירת זכות במקרקעין המצויים מחוץ לישראל [*] בסעיף קטן ( ב ) ( 2 ) ( [*] – המקרקעין הנמכרים ) , [*] שבה [*] המקרקעין הנמכרים לא שולם מס זר רק בשל הוראות הדין הזר ביחס [*] רווח הון בחילוף המקרקעין הנמכרים במקרקעין אחרים המצויים באותה מדינה ( להלן – המקרקעין הנרכשים ) , יחולו הוראות אלה –
+plenary_sentence: ( ג ' נבע לנישום רווח הון ריאלי ממכירת זכות במקרקעין המצויים מחוץ לישראל אדוני בסעיף קטן ( ב ) ( 2 ) ( תיקון – המקרקעין הנמכרים ) , התשס שבה יש המקרקעין הנמכרים לא שולם מס זר רק בשל הוראות הדין הזר ביחס אדוני רווח הון בחילוף המקרקעין הנמכרים במקרקעין אחרים המצויים באותה מדינה ( להלן – המקרקעין הנרכשים ) , יחולו הוראות אלה –
+plenary_tokens: אדוני,תיקון,אדוני,',יש,התשס
+probability of plenary sentence in plenary corpus: -675.59
+probability of plenary sentence in committee corpus: -635.00
+
+original_sentence: תקצץ פה , המדינה תיתן לך כאן , תסגור את זה , תעשה כך ותסגור את העניין .
+masked_sentence: תקצץ פה [*] המדינה תיתן לך כאן , תסגור את זה , תעשה כך ותסגור את העניין .
+plenary_sentence: תקצץ פה יש המדינה תיתן לך כאן , תסגור את זה , תעשה כך ותסגור את העניין .
 plenary_tokens: יש
-probability of plenary sentence in plenary corpus: -61.38
-probability of plenary sentence in committee corpus: -58.45
-
-original_sentence: אבל זאת לא אשמתו .
-masked_sentence: [*] זאת לא אשמתו .
-plenary_sentence: אדוני זאת לא אשמתו .
-plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -47.23
-probability of plenary sentence in committee corpus: -46.65
-
-original_sentence: היא מקיימת שיתוף של הקהילה בתכנון באמצעות נציג של כל ישוב במועצה , ולכל ישוב יש ועד מקומי .
-masked_sentence: היא מקיימת שיתוף של הקהילה בתכנון באמצעות נציג של כל ישוב במועצה , ולכל ישוב יש ועד מקומי [*]
-plenary_sentence: היא מקיימת שיתוף של הקהילה בתכנון באמצעות נציג של כל ישוב במועצה , ולכל ישוב יש ועד מקומי גם
-plenary_tokens: גם
-probability of plenary sentence in plenary corpus: -201.64
-probability of plenary sentence in committee corpus: -186.84
-
-original_sentence: אי אפשר לתקן עוול בעוול אחר .
-masked_sentence: אי אפשר [*] עוול בעוול אחר .
-plenary_sentence: אי אפשר גם עוול בעוול אחר .
-plenary_tokens: גם
-probability of plenary sentence in plenary corpus: -72.38
-probability of plenary sentence in committee corpus: -65.87
-
-original_sentence: דבר אחר ולא כמתגונן אלא כעובדה .
-masked_sentence: דבר אחר ולא [*] אלא כעובדה .
-plenary_sentence: דבר אחר ולא רק אלא כעובדה .
-plenary_tokens: רק
-probability of plenary sentence in plenary corpus: -71.76
-probability of plenary sentence in committee corpus: -69.87
-
-original_sentence: או שיושב ראש הוועדה יענה .
-masked_sentence: או [*] ראש הוועדה יענה .
-plenary_sentence: או לא ראש הוועדה יענה .
-plenary_tokens: לא
-probability of plenary sentence in plenary corpus: -59.59
-probability of plenary sentence in committee corpus: -57.71
-
-original_sentence: < < אורח > >
-masked_sentence: [*] < אורח > >
-plenary_sentence: אדוני < אורח > >
-plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -56.01
-probability of plenary sentence in committee corpus: -30.68
-
-original_sentence: ושלא נשכח , נאחל גם חג אילנות שמח לכולנו .
-masked_sentence: ושלא [*] , נאחל גם חג אילנות שמח לכולנו .
-plenary_sentence: ושלא גם , נאחל גם חג אילנות שמח לכולנו .
-plenary_tokens: גם
-probability of plenary sentence in plenary corpus: -106.45
-probability of plenary sentence in committee corpus: -100.25
+probability of plenary sentence in plenary corpus: -178.68
+probability of plenary sentence in committee corpus: -167.13
