@@ -11,7 +11,6 @@ Committee corpus:
 אני רוצה
 , אנחנו
 , כי
-
 Plenary corpus:
 חבר הכנסת
 - ראש
@@ -23,11 +22,10 @@ Plenary corpus:
 – אינו
 הכנסת ,
 אדוני היושב
-
 Tfidf:
 Committee corpus:
-לאטמה "
 " לאטמה
+לאטמה "
 נמל התעופה
 השתתפות עצמית
 המקרקעין הנמכרים
@@ -36,7 +34,6 @@ Committee corpus:
 התיישבות היהודים
 המאבק "
 גוז נסקי
-
 Plenary corpus:
 - 2006
 – 2000
@@ -48,7 +45,6 @@ Plenary corpus:
 – נגד
 השואה הבין
 - שושני
-
 Three-gram collocations:
 Frequency:
 Committee corpus:
@@ -62,7 +58,6 @@ Committee corpus:
 אנחנו מדברים על
 , אני רוצה
 אני לא יודע
-
 Plenary corpus:
 - ראש ,
 היושב - ראש
@@ -74,20 +69,18 @@ Plenary corpus:
 , בבקשה .
 של חבר הכנסת
 יושב - ראש
-
 Tfidf:
 Committee corpus:
 " לאטמה "
 בש " ן
-" אות המאבק
 אות המאבק "
+" אות המאבק
 בנתב " ג
 יגיע להסכמות בנושא
 המציע יגיע להסכמות
 להסכמות בנושא עם
 " יבוא :
 בר - קיימא
-
 Plenary corpus:
 2006 , מאת
 התשס " ו
@@ -99,7 +92,6 @@ Plenary corpus:
 " ו -
 ו – 1995
 אנשים עם מוגבלות
-
 Four-gram collocations:
 Frequency:
 Committee corpus:
@@ -113,7 +105,6 @@ Committee corpus:
 היושב - ראש .
 " אות המאבק "
 המשפט הבין - לאומי
-
 Plenary corpus:
 אדוני היושב - ראש
 היושב - ראש ,
@@ -125,7 +116,6 @@ Plenary corpus:
 ) , התשס "
 רבותי חברי הכנסת ,
 ראש , חברי הכנסת
-
 Tfidf:
 Committee corpus:
 בנתב " ג ,
@@ -138,7 +128,6 @@ Committee corpus:
 רשות הדיבור לחבר הכנסת
 פרק ב לחוק התיאומים
 במקרקעין המצויים מחוץ לישראל
-
 Plenary corpus:
 - 2006 , מאת
 2006 , מאת חבר
@@ -150,4 +139,3 @@ Plenary corpus:
 , התשס " ו
 התשס " ו -
 ס – 2000 ,
-
