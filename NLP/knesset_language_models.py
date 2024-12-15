@@ -9,8 +9,8 @@ import json
 class Trigram_LM:
     def __init__(self):
         self.lambda_trigram = 0.99
-        self.lambda_bigram = 0.007
-        self.lambda_unigram = 0.003
+        self.lambda_bigram = 0.009
+        self.lambda_unigram = 0.001
         self.total_tokens = 0
         self.vocab_size = 0
         self.unigram_counts = Counter()
@@ -37,7 +37,7 @@ class Trigram_LM:
         return smoothed_probability
 
     def calculate_prob_of_sentence(self, sentence):
-        token_list = ['<s>', '<s>'] + (sentence.split() if isinstance(sentence, str) else sentence) + ['</s>']
+        token_list = ['s_1', 's_1'] + (sentence.split() if isinstance(sentence, str) else sentence) + ['s_2']
         total_log_probability = 0.0
         for idx in range(2, len(token_list)):
             current_trigram = (token_list[idx - 2], token_list[idx - 1], token_list[idx])
@@ -60,14 +60,14 @@ class Trigram_LM:
     def generate_next_token(self, context):
         context_tokens = context.split() if isinstance(context, str) else context
         if len(context_tokens) < 2:
-            context_tokens = ['<s>', '<s>'] + context_tokens
+            context_tokens = ['s_1', 's_1'] + context_tokens
 
         prev_2, prev_1 = context_tokens[-2], context_tokens[-1]
 
         highest_probability = float('-inf')
         most_probable_token = None
 
-        skip_tokens = {'<s>', '</s>'}
+        skip_tokens = {'s_1', 's_2'}
 
         for candidate in self.unigram_counts.keys():
             if candidate in skip_tokens:
@@ -94,7 +94,7 @@ class Trigram_LM:
     def fit_model_to_sentences(self, input_sentences):
         for sentence in input_sentences:
             words = sentence.split() if isinstance(sentence, str) else sentence
-            words = ['<s>', '<s>'] + words + ['</s>']
+            words = ['s_1', 's_1'] + words + ['s_2']
             self.total_tokens += len(words)
             for i in range(len(words)):
                 self.unigram_counts[words[i]] += 1
@@ -122,7 +122,7 @@ class Trigram_LM:
 
         valid_ngrams = {
             ngram for ngram, count in global_ngram_counts.items()
-            if count >= min_threshold and '<s>' not in ngram and '</s>' not in ngram
+            if count >= min_threshold and 's_1' not in ngram and 's_2' not in ngram
         }
 
         if scoring_metric == 'frequency':
@@ -146,7 +146,7 @@ class Trigram_LM:
 
         for entry in text_data:
             tokens = entry.split() if isinstance(entry, str) else entry
-            padded_tokens = ['<s>'] * (n - 1) + tokens + ['</s>']
+            padded_tokens = ['s_1'] * (n - 1) + tokens + ['s_2']
 
             for start_idx in range(len(padded_tokens) - n + 1):
                 ngram = tuple(padded_tokens[start_idx : start_idx + n])
@@ -193,8 +193,8 @@ class Trigram_LM:
         return masked_sentences
 
 def compute_masked_perplexity(model, original_sentence, masked_sentence):
-    original_tokens = ['<s>', '<s>'] + original_sentence.split() + ['</s>']
-    masked_tokens = ['<s>', '<s>'] + masked_sentence.split() + ['</s>']
+    original_tokens = ['s_1', 's_1'] + original_sentence.split() + ['s_2']
+    masked_tokens = ['s_1', 's_1'] + masked_sentence.split() + ['s_2']
     masked_indices = [idx for idx, token in enumerate(masked_tokens) if token == '[*]']
     probabilities = []
     for index in masked_indices:

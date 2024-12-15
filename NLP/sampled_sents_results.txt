@@ -1,70 +1,70 @@
-original_sentence: מה שאני חייבת לומר הוא , שמשרד החינוך חייב לתת למי ששפתו היא ערבית , למי שדתו היא מוסלמית , למי שיש לו גיבורים משלו , ללמוד אותם .
-masked_sentence: מה שאני חייבת [*] הוא , שמשרד החינוך חייב לתת למי ששפתו היא ערבית , למי שדתו היא מוסלמית , למי שיש לו גיבורים משלו [*] ללמוד אותם .
-plenary_sentence: מה שאני חייבת , הוא , שמשרד החינוך חייב לתת למי ששפתו היא ערבית , למי שדתו היא מוסלמית , למי שיש לו גיבורים משלו , ללמוד אותם .
-plenary_tokens: ,, ,
-probability of plenary sentence in plenary corpus: -407.54
-probability of plenary sentence in committee corpus: -419.77
+original_sentence: אנחנו עוברים אפוא לתפעול ההצבעה .
+masked_sentence: אנחנו עוברים [*] לתפעול ההצבעה .
+plenary_sentence: אנחנו עוברים להצבעה לתפעול ההצבעה .
+plenary_tokens: להצבעה
+probability of plenary sentence in plenary corpus: -75.86
+probability of plenary sentence in committee corpus: -82.79
 
-original_sentence: את מפריעה לי יותר מדי , אני כבר לא רוצה להתייחס .
-masked_sentence: [*] מפריעה לי יותר מדי , אני כבר לא רוצה להתייחס .
-plenary_sentence: ( מפריעה לי יותר מדי , אני כבר לא רוצה להתייחס .
-plenary_tokens: (
-probability of plenary sentence in plenary corpus: -160.35
-probability of plenary sentence in committee corpus: -166.74
-
-original_sentence: אז לא תהיה משפחה ולא תהיה אשה .
-masked_sentence: אז [*] תהיה משפחה ולא תהיה אשה .
-plenary_sentence: אז אני תהיה משפחה ולא תהיה אשה .
-plenary_tokens: אני
-probability of plenary sentence in plenary corpus: -115.59
-probability of plenary sentence in committee corpus: -114.12
-
-original_sentence: אני חושב , שהצעדים שנקט חבר הכנסת גדליה גל עם חברים אחרים , שהקדישו מזמנם בשבוע שעבר וזימנו חברי כנסת לדיון לא פורמלי במושב כפר - ויתקין , בביתו של חבר הכנסת גדליה גל , כדי לחשוב מה אנחנו יכולים לעשות כדי ליצור קוד אתי להתנהגות חברי הכנסת – אני חושב שזה מעשה בשעתו ומעשה שאסור לנו לחדול ממנו ולהסתפק בו , אלא אנחנו צריכים להמשיך ולדון בו בוועדת הכנסת ובכל פינה בבית הזה , בסיעות שלו , על מנת לנסות ליצור משהו חדש .
-masked_sentence: אני [*] , שהצעדים שנקט חבר הכנסת גדליה גל עם חברים אחרים , שהקדישו מזמנם בשבוע שעבר וזימנו חברי כנסת לדיון [*] פורמלי במושב כפר - [*] , בביתו [*] חבר הכנסת גדליה גל , כדי לחשוב מה אנחנו יכולים לעשות כדי ליצור [*] אתי להתנהגות חברי הכנסת – אני חושב שזה מעשה בשעתו ומעשה שאסור לנו לחדול ממנו ולהסתפק בו [*] אלא אנחנו צריכים להמשיך ולדון בו בוועדת הכנסת ובכל פינה בבית הזה , בסיעות שלו , על [*] [*] ליצור משהו חדש .
-plenary_sentence: אני רוצה , שהצעדים שנקט חבר הכנסת גדליה גל עם חברים אחרים , שהקדישו מזמנם בשבוע שעבר וזימנו חברי כנסת לדיון , פורמלי במושב כפר - ראש , בביתו , חבר הכנסת גדליה גל , כדי לחשוב מה אנחנו יכולים לעשות כדי ליצור , אתי להתנהגות חברי הכנסת – אני חושב שזה מעשה בשעתו ומעשה שאסור לנו לחדול ממנו ולהסתפק בו , אלא אנחנו צריכים להמשיך ולדון בו בוועדת הכנסת ובכל פינה בבית הזה , בסיעות שלו , על - ידי ליצור משהו חדש .
-plenary_tokens: רוצה, ,, ראש, ,, ,, ,, -, ידי
-probability of plenary sentence in plenary corpus: -1147.57
-probability of plenary sentence in committee corpus: -1206.09
-
-original_sentence: מיכאל קליינר ( חרות – התנועה הלאומית ) :
-masked_sentence: [*] קליינר ( חרות – התנועה הלאומית ) :
-plenary_sentence: ( קליינר ( חרות – התנועה הלאומית ) :
-plenary_tokens: (
-probability of plenary sentence in plenary corpus: -92.47
-probability of plenary sentence in committee corpus: -130.97
-
-original_sentence: אני חושב שזה מקובל על כולם , אדוני היושב - ראש .
-masked_sentence: אני [*] שזה מקובל על כולם , אדוני היושב - ראש .
-plenary_sentence: אני רוצה שזה מקובל על כולם , אדוני היושב - ראש .
-plenary_tokens: רוצה
-probability of plenary sentence in plenary corpus: -126.41
-probability of plenary sentence in committee corpus: -137.34
-
-original_sentence: אנחנו מדברים על 10 - 12 מיליארד שקלים .
-masked_sentence: [*] מדברים על 10 - 12 מיליארד שקלים .
-plenary_sentence: ( מדברים על 10 - 12 מיליארד שקלים .
-plenary_tokens: (
-probability of plenary sentence in plenary corpus: -123.43
-probability of plenary sentence in committee corpus: -130.77
-
-original_sentence: תאמינו לי , כשאני מגיעה בשעה 08 :
-masked_sentence: תאמינו לי [*] כשאני מגיעה בשעה 08 :
-plenary_sentence: תאמינו לי , כשאני מגיעה בשעה 08 :
+original_sentence: אכן כך ראוי , כך יהיה נכון למדינתנו , שנתקדם גם בעניין הזה .
+masked_sentence: אכן כך ראוי , כך יהיה נכון למדינתנו , שנתקדם [*] בעניין הזה .
+plenary_sentence: אכן כך ראוי , כך יהיה נכון למדינתנו , שנתקדם , בעניין הזה .
 plenary_tokens: ,
-probability of plenary sentence in plenary corpus: -119.37
-probability of plenary sentence in committee corpus: -125.52
+probability of plenary sentence in plenary corpus: -198.14
+probability of plenary sentence in committee corpus: -203.05
 
-original_sentence: אדוני היושב - ראש , אתה יודע שלא מורידים חזן מהתיבה .
-masked_sentence: אדוני היושב - ראש , אתה יודע שלא מורידים חזן [*] .
-plenary_sentence: אדוני היושב - ראש , אתה יודע שלא מורידים חזן , .
-plenary_tokens: ,
-probability of plenary sentence in plenary corpus: -125.40
-probability of plenary sentence in committee corpus: -143.51
+original_sentence: אני מזמינה את השרה לימור לבנת להשיב על כל ההצעות לסדר - היום בנושא הזה .
+masked_sentence: אני מזמינה את השרה לימור לבנת להשיב על כל ההצעות לסדר - היום בנושא [*] .
+plenary_sentence: אני מזמינה את השרה לימור לבנת להשיב על כל ההצעות לסדר - היום בנושא : .
+plenary_tokens: :
+probability of plenary sentence in plenary corpus: -203.55
+probability of plenary sentence in committee corpus: -235.64
 
-original_sentence: סליחה , חבר הכנסת פנחסי , אני לא שומע .
-masked_sentence: סליחה , חבר [*] פנחסי , אני לא שומע .
-plenary_sentence: סליחה , חבר הכנסת פנחסי , אני לא שומע .
-plenary_tokens: הכנסת
-probability of plenary sentence in plenary corpus: -114.33
-probability of plenary sentence in committee corpus: -125.74
+original_sentence: חבר הכנסת ו צאדק חאג - יחיא שאל את שר הפנים ביום ט " ו בחשוון התשנ " ט ( 4 בנובמבר 1998 ) :
+masked_sentence: חבר הכנסת ו צאדק חאג - יחיא שאל את [*] הפנים ביום ט " ו בחשוון התשנ " ט ( 4 בנובמבר 1998 [*] :
+plenary_sentence: חבר הכנסת ו צאדק חאג - יחיא שאל את שר הפנים ביום ט " ו בחשוון התשנ " ט ( 4 בנובמבר 1998 ) :
+plenary_tokens: שר, )
+probability of plenary sentence in plenary corpus: -307.38
+probability of plenary sentence in committee corpus: -377.11
+
+original_sentence: 47 נגד , 14 בעד , אחד נמנע .
+masked_sentence: 47 [*] , 14 בעד , אחד נמנע .
+plenary_sentence: 47 נגד , 14 בעד , אחד נמנע .
+plenary_tokens: נגד
+probability of plenary sentence in plenary corpus: -122.58
+probability of plenary sentence in committee corpus: -141.96
+
+original_sentence: רואים את זה , זה משהו דה - פקטו – רואים דברים שלא ראו .
+masked_sentence: רואים את [*] , זה משהו דה - פקטו – רואים דברים שלא ראו .
+plenary_sentence: רואים את זה , זה משהו דה - פקטו – רואים דברים שלא ראו .
+plenary_tokens: זה
+probability of plenary sentence in plenary corpus: -212.19
+probability of plenary sentence in committee corpus: -208.78
+
+original_sentence: הוא לא ידון ברצח .
+masked_sentence: הוא [*] ידון ברצח .
+plenary_sentence: הוא לא ידון ברצח .
+plenary_tokens: לא
+probability of plenary sentence in plenary corpus: -66.67
+probability of plenary sentence in committee corpus: -68.33
+
+original_sentence: ובכן , רבותי , אשר לנושא שעומד לפנינו , אדוני יושב - ראש ועדת הפנים הנכבד , חבר הכנסת אזולאי , יש לנו בארץ חוק שגם חבר הכנסת שטרית , שעוסק בצורכי ציבור באמונה , תומך בו , יש לנו חוק שבא וקובע את הכללים , את הדינים והוראות הדינים הקובעים את איסור ניגוד העניינים של נבחרי ציבור .
+masked_sentence: ובכן [*] רבותי , אשר לנושא שעומד לפנינו [*] [*] יושב - ראש ועדת הפנים הנכבד , חבר הכנסת אזולאי , יש לנו בארץ חוק שגם חבר הכנסת שטרית [*] שעוסק בצורכי [*] באמונה , תומך בו , יש לנו חוק שבא וקובע את הכללים , את הדינים והוראות הדינים הקובעים את איסור ניגוד העניינים של נבחרי ציבור .
+plenary_sentence: ובכן , רבותי , אשר לנושא שעומד לפנינו , אני יושב - ראש ועדת הפנים הנכבד , חבר הכנסת אזולאי , יש לנו בארץ חוק שגם חבר הכנסת שטרית , שעוסק בצורכי , באמונה , תומך בו , יש לנו חוק שבא וקובע את הכללים , את הדינים והוראות הדינים הקובעים את איסור ניגוד העניינים של נבחרי ציבור .
+plenary_tokens: ,, ,, אני, ,, ,
+probability of plenary sentence in plenary corpus: -784.30
+probability of plenary sentence in committee corpus: -841.76
+
+original_sentence: אלו תשלומים שקונים בכסף יקר חינוך זול בדמות טיולים שנתיים , במקום שטיולים אלה יהיו חלק אינטגרלי של לימודי הגיאוגרפיה וידיעת הארץ .
+masked_sentence: [*] תשלומים שקונים בכסף יקר חינוך זול בדמות טיולים שנתיים , במקום [*] אלה יהיו חלק אינטגרלי של לימודי הגיאוגרפיה וידיעת הארץ .
+plenary_sentence: אני תשלומים שקונים בכסף יקר חינוך זול בדמות טיולים שנתיים , במקום " אלה יהיו חלק אינטגרלי של לימודי הגיאוגרפיה וידיעת הארץ .
+plenary_tokens: אני, "
+probability of plenary sentence in plenary corpus: -339.17
+probability of plenary sentence in committee corpus: -343.43
+
+original_sentence: אחריו – חברות הכנסת יהודית נאות וענת מאור .
+masked_sentence: אחריו – חברות הכנסת יהודית [*] וענת מאור .
+plenary_sentence: אחריו – חברות הכנסת יהודית נאות וענת מאור .
+plenary_tokens: נאות
+probability of plenary sentence in plenary corpus: -121.01
+probability of plenary sentence in committee corpus: -144.23
 
