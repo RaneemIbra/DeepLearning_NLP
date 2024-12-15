@@ -32,7 +32,6 @@ class Trigram_LM:
         count = counts.get(ngram, 0)
         return (count + 1) / (total + self.vocab_size)
 
-
     # the following function calculates the probability of a sentence
     def calculate_prob_of_sentence(self, sentence):
         tokens = self.prepare_tokens(sentence)
