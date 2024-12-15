@@ -9,113 +9,138 @@ import json
 class Trigram_LM:
     def __init__(self):
         self.lambda_trigram = 0.7
-        self.lambda_bigram = 0.01
-        self.lambda_unigram = 0.29
+        self.lambda_bigram = 0.29
+        self.lambda_unigram = 0.01
         self.total_tokens = 0
         self.vocab_size = 0
         self.unigram_counts = Counter()
         self.bigram_counts = Counter()
         self.trigram_counts = Counter()
 
+    # a function to calculate the smoothed probability of an ngram using laplace smoothing
     def compute_smoothed_probability(self, ngram, ngram_type):
-        if ngram_type == 1:
-            word = ngram[0]
-            count = self.unigram_counts[word]
-            total = self.total_tokens
-        elif ngram_type == 2:
-            first_word, second_word = ngram
-            count = self.bigram_counts[(first_word, second_word)]
-            total = self.unigram_counts[first_word]
-        elif ngram_type == 3:
-            first_word, second_word, third_word = ngram
-            count = self.trigram_counts[(first_word, second_word, third_word)]
-            total = self.bigram_counts[(first_word, second_word)]
-        else:
-            raise ValueError("Error")
+        ngram_type_map = {
+            1: (self.unigram_counts, self.total_tokens),
+            2: (self.bigram_counts, self.unigram_counts.get(ngram[0], 0) if len(ngram) >= 1 else 0),
+            3: (self.trigram_counts, self.bigram_counts.get((ngram[0], ngram[1]), 0) if len(ngram) >= 2 else 0)
+        }
 
-        smoothed_probability = (count + 1) / (total + self.vocab_size)
-        return smoothed_probability
+        if len(ngram) < ngram_type:
+            return 1 / (self.vocab_size + 1)
 
+        counts, total = ngram_type_map[ngram_type]
+        count = counts.get(ngram, 0)
+        return (count + 1) / (total + self.vocab_size)
+
+
+    # the following function calculates the probability of a sentence
     def calculate_prob_of_sentence(self, sentence):
-        token_list = ['s_1', 's_1'] + (sentence.split() if isinstance(sentence, str) else sentence) + ['s_2']
-        total_log_probability = 0.0
-        for idx in range(2, len(token_list)):
-            current_trigram = (token_list[idx - 2], token_list[idx - 1], token_list[idx])
-            current_bigram = (token_list[idx - 1], token_list[idx])
-            current_unigram = (token_list[idx],)
-            
-            unigram_prob = self.compute_smoothed_probability(current_unigram, 1)
-            bigram_prob = self.compute_smoothed_probability(current_bigram, 2)
-            trigram_prob = self.compute_smoothed_probability(current_trigram, 3)
+        tokens = self.prepare_tokens(sentence)
+        total_log_prob = sum(self.calculate_token_log_prob(tokens, idx) for idx in range(2, len(tokens)))
+        return total_log_prob
 
-            interpolated_prob = (
-                self.lambda_unigram * unigram_prob +
-                self.lambda_bigram * bigram_prob +
-                self.lambda_trigram * trigram_prob
-            )
-            total_log_probability += math.log2(interpolated_prob)
+    # a function to prepare each sentence for a trigram model by adding dummy tokens
+    def prepare_tokens(self, sentence):
+        if isinstance(sentence, str):
+            sentence = sentence.split()
+        return ['s_1', 's_1'] + sentence + ['s_2']
 
-        return total_log_probability
+    # a function to calculate the log probability for a token at a specific index
+    def calculate_token_log_prob(self, tokens, idx):
+        unigram = (tokens[idx],)
+        bigram = (tokens[idx - 1], tokens[idx])
+        trigram = (tokens[idx - 2], tokens[idx - 1], tokens[idx])
 
+        unigram_prob = self.compute_smoothed_probability(unigram, 1)
+        bigram_prob = self.compute_smoothed_probability(bigram, 2)
+        trigram_prob = self.compute_smoothed_probability(trigram, 3)
+
+        interpolated_prob = (
+            self.lambda_unigram * unigram_prob +
+            self.lambda_bigram * bigram_prob +
+            self.lambda_trigram * trigram_prob
+        )
+        return math.log2(interpolated_prob)
+
+    # a function to generate the next token in a given context based on probabilities
     def generate_next_token(self, context):
-        context_tokens = context.split() if isinstance(context, str) else context
-        if len(context_tokens) < 2:
-            context_tokens = ['s_1', 's_1'] + context_tokens
+        tokens = self.prepare_context_tokens(context)
+        prev_2, prev_1 = tokens[-2], tokens[-1]
+        best_token, best_log_prob = self.find_best_candidate(prev_2, prev_1)
+        return best_token, best_log_prob
 
-        prev_2, prev_1 = context_tokens[-2], context_tokens[-1]
-        highest_probability = float('-inf')
-        most_probable_token = None
+    # a function to prepare each sentence if there is a need to add dummy tokens
+    def prepare_context_tokens(self, context):
+        if isinstance(context, str):
+            tokens = context.split()
+        else:
+            tokens = context
+        return ['s_1', 's_1'] + tokens if len(tokens) < 2 else tokens
+
+    # a function that computes the probability of the ngrams and then calculates the combined probability
+    def compute_combined_probability(self, candidate, prev_2, prev_1):
+        unigram_prob = self.compute_smoothed_probability((candidate,), 1)
+        bigram_prob = self.compute_smoothed_probability((prev_1, candidate), 2)
+        trigram_prob = self.compute_smoothed_probability((prev_2, prev_1, candidate), 3)
+
+        return (
+            self.lambda_unigram * unigram_prob +
+            self.lambda_bigram * bigram_prob +
+            self.lambda_trigram * trigram_prob
+        )
+
+    # a function that will find the token with the highest probability and returns it with the log of its probability
+    def find_best_candidate(self, prev_2, prev_1):
         skip_tokens = {'s_1', 's_2'}
+        best_token = None
+        best_log_prob = float('-inf')
+
         for candidate in self.unigram_counts.keys():
             if candidate in skip_tokens:
                 continue
 
-            unigram_probability = self.compute_smoothed_probability((candidate,), 1)
-            bigram_probability = self.compute_smoothed_probability((prev_1, candidate), 2)
-            trigram_probability = self.compute_smoothed_probability((prev_2, prev_1, candidate), 3)
-
-            combined_probability = (
-                self.lambda_unigram * unigram_probability +
-                self.lambda_bigram * bigram_probability +
-                self.lambda_trigram * trigram_probability
-            )
-
+            combined_probability = self.compute_combined_probability(candidate, prev_2, prev_1)
             log_probability = math.log2(combined_probability)
 
-            if log_probability > highest_probability:
-                highest_probability = log_probability
-                most_probable_token = candidate
+            if log_probability > best_log_prob:
+                best_log_prob = log_probability
+                best_token = candidate
 
-        return most_probable_token, highest_probability
+        return best_token, best_log_prob
 
+    # a function to train / fit the model on the sentences
     def fit_model_to_sentences(self, input_sentences):
         for sentence in input_sentences:
-            words = sentence.split() if isinstance(sentence, str) else sentence
-            words = ['s_1', 's_1'] + words + ['s_2']
-            self.total_tokens += len(words)
-            for i in range(len(words)):
-                self.unigram_counts[words[i]] += 1
-                if i > 0:
-                    self.bigram_counts[(words[i-1], words[i])] += 1
-                if i > 1:
-                    self.trigram_counts[(words[i-2], words[i-1], words[i])] += 1
-
+            tokens = self.prepare_tokens(sentence)
+            self.update_ngram_counts(tokens)
         self.vocab_size = len(self.unigram_counts)
+    
+    # a function to update the count of each ngram
+    def update_ngram_counts(self, tokens):
+        self.total_tokens += len(tokens)
+        for i, token in enumerate(tokens):
+            self.unigram_counts[token] += 1
+            if i >= 1:
+                self.bigram_counts[(tokens[i-1], token)] += 1
+            if i >= 2:
+                self.trigram_counts[(tokens[i-2], tokens[i-1], token)] += 1
 
+    # a function that gets the top k with length n that appears the most in the corpus according to a certain metric
     def get_k_n_t_collocations(self, data, top_k, ngram_size, min_threshold, scoring_metric):
         num_documents = data['protocol_name'].nunique()
         global_ngram_counts = Counter()
         document_ngram_counts = Counter()
-        protocol_sentences = data.groupby('protocol_name')['sentence_text'].apply(list)
-        protocol_ngram_frequencies = {}
-        for protocol_name, sentences in protocol_sentences.items():
+        protocol_ngrams = {}
+
+        for protocol_name, sentences in data.groupby('protocol_name')['sentence_text']:
             ngram_counts = self.calculate_ngram_frequencies(sentences, ngram_size)
             global_ngram_counts.update(ngram_counts)
-            for ngram in ngram_counts:
+
+            for ngram in ngram_counts.keys():
                 document_ngram_counts[ngram] += 1
 
             if scoring_metric == 'tfidf':
-                protocol_ngram_frequencies[protocol_name] = ngram_counts
+                protocol_ngrams[protocol_name] = ngram_counts
 
         valid_ngrams = {
             ngram for ngram, count in global_ngram_counts.items()
@@ -123,39 +148,53 @@ class Trigram_LM:
         }
 
         if scoring_metric == 'frequency':
-            ranked_ngrams = sorted(valid_ngrams, key=lambda ngram: global_ngram_counts[ngram], reverse=True)
-            return ranked_ngrams[:top_k]
+            return sorted(valid_ngrams, key=lambda ngram: global_ngram_counts[ngram], reverse=True)[:top_k]
 
         elif scoring_metric == 'tfidf':
-            tfidf_scores = defaultdict(list)
-            for protocol_name, ngram_counts in protocol_ngram_frequencies.items():
-                protocol_valid_ngrams = {ngram for ngram in ngram_counts if ngram in valid_ngrams}
-                for ngram in protocol_valid_ngrams:
-                    score = self.compute_tfidf(ngram, ngram_counts, document_ngram_counts, num_documents)
-                    tfidf_scores[ngram].append(score)
+            return self.get_top_tfidf_ngrams(protocol_ngrams, valid_ngrams, document_ngram_counts, num_documents, top_k)
+        
+        else:
+            raise ValueError("wrong metric used")
 
-            average_tfidf_scores = {ngram: sum(scores) / len(scores) for ngram, scores in tfidf_scores.items()}
-            ranked_ngrams = sorted(average_tfidf_scores.items(), key=lambda item: item[1], reverse=True)
-            return [ngram for ngram, _ in ranked_ngrams[:top_k]]
+    # a function to get the top tfidf scoring ngrams
+    def get_top_tfidf_ngrams(self, protocol_ngrams, valid_ngrams, document_ngram_counts, num_documents, top_k):
+        tfidf_scores = defaultdict(list)
 
+        for _, ngram_counts in protocol_ngrams.items():
+            for ngram in valid_ngrams & set(ngram_counts.keys()):
+                score = self.compute_tfidf(ngram, ngram_counts, document_ngram_counts, num_documents)
+                tfidf_scores[ngram].append(score)
+
+        average_tfidf_scores = {ngram: sum(scores) / len(scores) for ngram, scores in tfidf_scores.items()}
+        ranked_ngrams = sorted(average_tfidf_scores.items(), key=lambda item: item[1], reverse=True)
+
+        return [ngram for ngram, _ in ranked_ngrams[:top_k]]
+
+    # a function to calculate the frquency of the ngrams
     def calculate_ngram_frequencies(self, text_data, n):
         ngram_frequencies = Counter()
-
-        for entry in text_data:
-            tokens = entry.split() if isinstance(entry, str) else entry
-            padded_tokens = ['s_1'] * (n - 1) + tokens + ['s_2']
-
-            for start_idx in range(len(padded_tokens) - n + 1):
-                ngram = tuple(padded_tokens[start_idx : start_idx + n])
-                ngram_frequencies[ngram] += 1
+        for sentence in text_data:
+            tokens = self.tokenize(sentence, n)
+            ngram_frequencies.update(self.extract_ngrams(tokens, n))
 
         return ngram_frequencies
 
+    # a function to calculate the tfidf score according to the formula that was taught
     def compute_tfidf(self, ngram, ngram_frequencies, document_frequencies, num_documents):
         term_frequency = ngram_frequencies[ngram] / sum(ngram_frequencies.values())
         inverse_document_frequency = math.log((num_documents + 1) / (document_frequencies[ngram] + 1))
         return term_frequency * inverse_document_frequency
-    
+
+    # a function to tokenize and prepare the sentence
+    def tokenize(self, sentence, n):
+        tokens = sentence.split() if isinstance(sentence, str) else sentence
+        return ['s_1'] * (n - 1) + tokens + ['s_2']
+
+    # a function that will extract the ngrams
+    def extract_ngrams(self, tokens, n):
+        return [tuple(tokens[i:i + n]) for i in range(len(tokens) - n + 1)]
+
+    # a function to save the output for the collocations in a file
     def save_collocations(self, output_file, committee_data, plenary_data):
         with open(output_file, 'w', encoding='utf-8') as file:
             for ngram_size in [2, 3, 4]:
@@ -174,7 +213,8 @@ class Trigram_LM:
 
                         for collocation in collocations:
                             file.write(" ".join(collocation) + "\n")
-
+    
+    # a function to mask a percentage of random tokens
     def mask_tokens_in_sentences(self, sentences, mask_percentage):
         masked_sentences = []
         for sentence in sentences:
@@ -188,37 +228,36 @@ class Trigram_LM:
 
         return masked_sentences
 
+# a function to calculate the perplexity of the model
 def compute_masked_perplexity(model, original_sentence, masked_sentence):
+    # an inner function that will be only used in the outer function to get the ngrams probabilities
+    def get_ngram_probabilities(model, tokens, index):
+        unigram = (tokens[index],)
+        bigram = (tokens[index - 1], tokens[index])
+        trigram = (tokens[index - 2], tokens[index - 1], tokens[index])
+
+        p_unigram = model.compute_smoothed_probability(unigram, 1)
+        p_bigram = model.compute_smoothed_probability(bigram, 2)
+        p_trigram = model.compute_smoothed_probability(trigram, 3)
+
+        return (model.lambda_unigram * p_unigram +
+                model.lambda_bigram * p_bigram +
+                model.lambda_trigram * p_trigram)
+
     original_tokens = ['s_1', 's_1'] + original_sentence.split() + ['s_2']
     masked_tokens = ['s_1', 's_1'] + masked_sentence.split() + ['s_2']
     masked_indices = [idx for idx, token in enumerate(masked_tokens) if token == '[*]']
-    probabilities = []
-    for index in masked_indices:
-        if index < 2:
-            continue
 
-        unigram = (original_tokens[index],)
-        bigram = (original_tokens[index - 1], original_tokens[index])
-        trigram = (original_tokens[index - 2], original_tokens[index - 1], original_tokens[index])
-
-        unigram_prob = model.compute_smoothed_probability(unigram, 1)
-        bigram_prob = model.compute_smoothed_probability(bigram, 2)
-        trigram_prob = model.compute_smoothed_probability(trigram, 3)
-
-        combined_prob = (
-            model.lambda_unigram * unigram_prob +
-            model.lambda_bigram * bigram_prob +
-            model.lambda_trigram * trigram_prob
-        )
-
-        probabilities.append(combined_prob)
+    probabilities = [
+        get_ngram_probabilities(model, original_tokens, idx)
+        for idx in masked_indices if idx >= 2
+    ]
 
     if not probabilities:
         return float('inf')
 
-    average_log_prob = sum(math.log2(prob) for prob in probabilities) / len(probabilities)
-    perplexity = 2 ** (-average_log_prob)
-    return perplexity
+    average_log_prob = sum(math.log2(p) for p in probabilities) / len(probabilities)
+    return 2 ** (-average_log_prob)
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
@@ -243,21 +282,28 @@ if __name__ == '__main__':
         sys.exit(1)
 
     df = pd.DataFrame(records, columns=['protocol_name', 'protocol_type', 'sentence_text'])
+
     committee_data = df[df['protocol_type'] == 'committee']
     plenary_data = df[df['protocol_type'] == 'plenary']
+
     committee_sentences = committee_data['sentence_text'].tolist()
     plenary_sentences = plenary_data['sentence_text'].tolist()
+
     committee_model = Trigram_LM()
     plenary_model = Trigram_LM()
+
     committee_model.fit_model_to_sentences(committee_sentences)
     plenary_model.fit_model_to_sentences(plenary_sentences)
+
     collocation_file = os.path.join(output_dir, "knesset_collocations.txt")
     committee_model.save_collocations(collocation_file, committee_data, plenary_data)
     filtered_sentences = [s for s in committee_sentences if len(s.split()) >= 5]
     sampled_sentences = random.sample(filtered_sentences, min(10, len(filtered_sentences)))
     masked_sentences = plenary_model.mask_tokens_in_sentences(sampled_sentences, 10)
+
     original_file = os.path.join(output_dir, "original_sampled_sents.txt")
     masked_file = os.path.join(output_dir, "masked_sampled_sents.txt")
+
     with open(original_file, 'w', encoding='utf-8') as orig_f:
         orig_f.writelines(s + '\n' for s in sampled_sentences)
 
