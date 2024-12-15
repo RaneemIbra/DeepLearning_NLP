@@ -8,9 +8,9 @@ import json
 
 class Trigram_LM:
     def __init__(self):
-        self.lambda_trigram = 0.99
-        self.lambda_bigram = 0.009
-        self.lambda_unigram = 0.001
+        self.lambda_trigram = 0.7
+        self.lambda_bigram = 0.01
+        self.lambda_unigram = 0.29
         self.total_tokens = 0
         self.vocab_size = 0
         self.unigram_counts = Counter()
@@ -63,12 +63,9 @@ class Trigram_LM:
             context_tokens = ['s_1', 's_1'] + context_tokens
 
         prev_2, prev_1 = context_tokens[-2], context_tokens[-1]
-
         highest_probability = float('-inf')
         most_probable_token = None
-
         skip_tokens = {'s_1', 's_2'}
-
         for candidate in self.unigram_counts.keys():
             if candidate in skip_tokens:
                 continue
@@ -177,7 +174,6 @@ class Trigram_LM:
 
                         for collocation in collocations:
                             file.write(" ".join(collocation) + "\n")
-                        file.write("\n")
 
     def mask_tokens_in_sentences(self, sentences, mask_percentage):
         masked_sentences = []
@@ -257,7 +253,7 @@ if __name__ == '__main__':
     plenary_model.fit_model_to_sentences(plenary_sentences)
     collocation_file = os.path.join(output_dir, "knesset_collocations.txt")
     committee_model.save_collocations(collocation_file, committee_data, plenary_data)
-    filtered_sentences = [s for s in plenary_sentences if len(s.split()) >= 5]
+    filtered_sentences = [s for s in committee_sentences if len(s.split()) >= 5]
     sampled_sentences = random.sample(filtered_sentences, min(10, len(filtered_sentences)))
     masked_sentences = plenary_model.mask_tokens_in_sentences(sampled_sentences, 10)
     original_file = os.path.join(output_dir, "original_sampled_sents.txt")
@@ -291,7 +287,7 @@ if __name__ == '__main__':
             res_f.write(f"plenary_sentence: {final}\n")
             res_f.write(f"plenary_tokens: {', '.join(tokens)}\n")
             res_f.write(f"probability of plenary sentence in plenary corpus: {p_plen:.2f}\n")
-            res_f.write(f"probability of plenary sentence in committee corpus: {p_comm:.2f}\n\n")
+            res_f.write(f"probability of plenary sentence in committee corpus: {p_comm:.2f}\n")
 
     perplexity_file = os.path.join(output_dir, "perplexity_result.txt")
     total_perplexity = sum(
