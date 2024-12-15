@@ -1,48 +1,23 @@
-import json
-import math
 import os
 import random
-import sys
 from collections import Counter, defaultdict
+import math
 import pandas as pd
+import sys
+import json
 
 class Trigram_LM:
-    """
-    A trigram language model using add-one smoothing and interpolation.
-    Interpolation weights: trigram=0.9, bigram=0.09, unigram=0.01.
-    Uses log base 2 for all probabilities.
-    """
-
-    def __init__(self, lambdas=(0.97, 0.02, 0.01)):
-        self.lambda_trigram, self.lambda_bigram, self.lambda_unigram = lambdas
+    def __init__(self):
+        self.lambda_trigram = 0.99
+        self.lambda_bigram = 0.007
+        self.lambda_unigram = 0.003
+        self.total_tokens = 0
+        self.vocab_size = 0
         self.unigram_counts = Counter()
         self.bigram_counts = Counter()
         self.trigram_counts = Counter()
-        self.total_tokens = 0
-        self.vocab_size = 0
-        self.frequency_penalty_factor = 2.0
-        self.punctuation_tokens = {",", ".", ";", ":", "?", "!", "(", ")", "״", "\"", "׳", "’", "״", "…", "-", "–"}
-        self.per_token_penalty = {
-            "את": 0.3,
-            "לא": 0.3,
-            "של": 0.3,
-            "אני": 0.3,
-            "זה": 0.3,
-            "כן": 0.3,
-            "הכנסת": 0.3,
-            "על": 0.3,
-            "חבר": 0.3,
-            "ראש": 0.3,
-            "הוא": 0.3,
-            "גם": 0.3,
-            "אדוני": 0.3,
-        }
 
     def compute_smoothed_probability(self, ngram, ngram_type):
-        """
-        Calculate add-one smoothed probability for unigrams, bigrams, or trigrams.
-        ngram_type=1: unigram, ngram_type=2: bigram, ngram_type=3: trigram.
-        """
         if ngram_type == 1:
             word = ngram[0]
             count = self.unigram_counts[word]
@@ -56,16 +31,12 @@ class Trigram_LM:
             count = self.trigram_counts[(first_word, second_word, third_word)]
             total = self.bigram_counts[(first_word, second_word)]
         else:
-            raise ValueError("Invalid ngram_type. Must be 1, 2, or 3.")
+            raise ValueError("Error")
 
         smoothed_probability = (count + 1) / (total + self.vocab_size)
         return smoothed_probability
 
     def calculate_prob_of_sentence(self, sentence):
-        """
-        Compute the log base 2 probability of a given sentence using a weighted combination
-        of unigram, bigram, and trigram probabilities.
-        """
         token_list = ['<s>', '<s>'] + (sentence.split() if isinstance(sentence, str) else sentence) + ['</s>']
         total_log_probability = 0.0
         for idx in range(2, len(token_list)):
@@ -87,9 +58,6 @@ class Trigram_LM:
         return total_log_probability
 
     def generate_next_token(self, context):
-        """
-        Predict the most probable next token given a context, based on interpolation of unigram, bigram, and trigram probabilities.
-        """
         context_tokens = context.split() if isinstance(context, str) else context
         if len(context_tokens) < 2:
             context_tokens = ['<s>', '<s>'] + context_tokens
@@ -115,11 +83,6 @@ class Trigram_LM:
                 self.lambda_trigram * trigram_probability
             )
 
-            if candidate in self.punctuation_tokens:
-                combined_probability *= 0.05
-            if candidate in self.per_token_penalty:
-                combined_probability *= self.per_token_penalty[candidate]
-
             log_probability = math.log2(combined_probability)
 
             if log_probability > highest_probability:
@@ -128,13 +91,7 @@ class Trigram_LM:
 
         return most_probable_token, highest_probability
 
-    
     def fit_model_to_sentences(self, input_sentences):
-        """
-        Fit the model to a collection of sentences.
-        Insert markers at the beginning and end of each sentence.
-        Count occurrences of unigrams, bigrams, and trigrams.
-        """
         for sentence in input_sentences:
             words = sentence.split() if isinstance(sentence, str) else sentence
             words = ['<s>', '<s>'] + words + ['</s>']
@@ -149,11 +106,6 @@ class Trigram_LM:
         self.vocab_size = len(self.unigram_counts)
 
     def get_k_n_t_collocations(self, data, top_k, ngram_size, min_threshold, scoring_metric):
-        """
-        Extract the top K collocations of specified length (n-grams) that appear at least a given number of times.
-        - If scoring_metric='frequency', rank collocations by their frequency.
-        - If scoring_metric='tfidf', compute TF-IDF scores and rank collocations by their score.
-        """
         num_documents = data['protocol_name'].nunique()
         global_ngram_counts = Counter()
         document_ngram_counts = Counter()
@@ -190,9 +142,6 @@ class Trigram_LM:
             return [ngram for ngram, _ in ranked_ngrams[:top_k]]
 
     def calculate_ngram_frequencies(self, text_data, n):
-        """
-        Calculate the frequencies of n-grams of size n in the provided text corpus.
-        """
         ngram_frequencies = Counter()
 
         for entry in text_data:
@@ -206,18 +155,11 @@ class Trigram_LM:
         return ngram_frequencies
 
     def compute_tfidf(self, ngram, ngram_frequencies, document_frequencies, num_documents):
-        """
-        Calculate the Term Frequency-Inverse Document Frequency (TF-IDF) score for a specific n-gram.
-        """
         term_frequency = ngram_frequencies[ngram] / sum(ngram_frequencies.values())
         inverse_document_frequency = math.log((num_documents + 1) / (document_frequencies[ngram] + 1))
         return term_frequency * inverse_document_frequency
     
     def save_collocations(self, output_file, committee_data, plenary_data):
-        """
-        Save collocations for bigrams, trigrams, and four-grams to the specified output file.
-        Includes results for both frequency and TF-IDF metrics.
-        """
         with open(output_file, 'w', encoding='utf-8') as file:
             for ngram_size in [2, 3, 4]:
                 ngram_label = {2: "Two", 3: "Three", 4: "Four"}.get(ngram_size, "Unknown")
@@ -238,9 +180,6 @@ class Trigram_LM:
                         file.write("\n")
 
     def mask_tokens_in_sentences(self, sentences, mask_percentage):
-        """
-        Replace a specified percentage of tokens in each sentence with the mask token [*].
-        """
         masked_sentences = []
         for sentence in sentences:
             token_list = sentence.split()
@@ -254,10 +193,6 @@ class Trigram_LM:
         return masked_sentences
 
 def compute_masked_perplexity(model, original_sentence, masked_sentence):
-    """
-    Compute the perplexity for masked tokens in a sentence.
-    Returns infinity if no valid probabilities are found.
-    """
     original_tokens = ['<s>', '<s>'] + original_sentence.split() + ['</s>']
     masked_tokens = ['<s>', '<s>'] + masked_sentence.split() + ['</s>']
     masked_indices = [idx for idx, token in enumerate(masked_tokens) if token == '[*]']
@@ -291,7 +226,6 @@ def compute_masked_perplexity(model, original_sentence, masked_sentence):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print("Error in reading the command")
         sys.exit(1)
 
     corpus_file = sys.argv[1]
@@ -310,7 +244,6 @@ if __name__ == '__main__':
                     )
                 )
     except FileNotFoundError:
-        print(f"Error: File not found: {corpus_file}")
         sys.exit(1)
 
     df = pd.DataFrame(records, columns=['protocol_name', 'protocol_type', 'sentence_text'])
@@ -318,8 +251,8 @@ if __name__ == '__main__':
     plenary_data = df[df['protocol_type'] == 'plenary']
     committee_sentences = committee_data['sentence_text'].tolist()
     plenary_sentences = plenary_data['sentence_text'].tolist()
-    committee_model = Trigram_LM((0.97, 0.02, 0.01))
-    plenary_model = Trigram_LM((0.97, 0.02, 0.01))
+    committee_model = Trigram_LM()
+    plenary_model = Trigram_LM()
     committee_model.fit_model_to_sentences(committee_sentences)
     plenary_model.fit_model_to_sentences(plenary_sentences)
     collocation_file = os.path.join(output_dir, "knesset_collocations.txt")
@@ -366,4 +299,4 @@ if __name__ == '__main__':
     )
     average_perplexity = total_perplexity / len(sampled_sentences)
     with open(perplexity_file, 'w', encoding='utf-8') as pp_f:
-        pp_f.write(f"Average perplexity: {average_perplexity:.2f}\n")
+        pp_f.write(f"{average_perplexity:.2f}\n")
