@@ -1,1 +1,1 @@
-Average perplexity: 16758.67
+5774.29

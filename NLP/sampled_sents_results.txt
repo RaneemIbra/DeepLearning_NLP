@@ -1,70 +1,70 @@
-original_sentence: לכן אנשים שנפגעים בתחומה של מדינת ישראל , זו אחריותה של מדינת ישראל .
-masked_sentence: לכן אנשים שנפגעים בתחומה [*] מדינת ישראל , זו אחריותה של מדינת ישראל .
-plenary_sentence: לכן אנשים שנפגעים בתחומה אדוני מדינת ישראל , זו אחריותה של מדינת ישראל .
-plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -179.16
-probability of plenary sentence in committee corpus: -190.59
+original_sentence: מה שאני חייבת לומר הוא , שמשרד החינוך חייב לתת למי ששפתו היא ערבית , למי שדתו היא מוסלמית , למי שיש לו גיבורים משלו , ללמוד אותם .
+masked_sentence: מה שאני חייבת [*] הוא , שמשרד החינוך חייב לתת למי ששפתו היא ערבית , למי שדתו היא מוסלמית , למי שיש לו גיבורים משלו [*] ללמוד אותם .
+plenary_sentence: מה שאני חייבת , הוא , שמשרד החינוך חייב לתת למי ששפתו היא ערבית , למי שדתו היא מוסלמית , למי שיש לו גיבורים משלו , ללמוד אותם .
+plenary_tokens: ,, ,
+probability of plenary sentence in plenary corpus: -407.54
+probability of plenary sentence in committee corpus: -419.77
 
-original_sentence: לשאילתא של חבר הכנסת אורי אריאל .
-masked_sentence: לשאילתא של חבר הכנסת אורי [*] .
-plenary_sentence: לשאילתא של חבר הכנסת אורי אריאל .
-plenary_tokens: אריאל
-probability of plenary sentence in plenary corpus: -83.76
-probability of plenary sentence in committee corpus: -98.93
+original_sentence: את מפריעה לי יותר מדי , אני כבר לא רוצה להתייחס .
+masked_sentence: [*] מפריעה לי יותר מדי , אני כבר לא רוצה להתייחס .
+plenary_sentence: ( מפריעה לי יותר מדי , אני כבר לא רוצה להתייחס .
+plenary_tokens: (
+probability of plenary sentence in plenary corpus: -160.35
+probability of plenary sentence in committee corpus: -166.74
 
-original_sentence: על האלימות המילולית הזאת גזר השוטר את גזר - הדין על המקום והוא הכניס בו מכות רצח , כולל אקדח טייזר , באלימות שמזעזעת כל מי שרואה את הסרטון .
-masked_sentence: על האלימות המילולית הזאת גזר [*] את גזר - הדין על המקום [*] הכניס בו מכות רצח , כולל אקדח טייזר , באלימות שמזעזעת [*] מי שרואה את הסרטון .
-plenary_sentence: על האלימות המילולית הזאת גזר אדוני את גזר - הדין על המקום הזה הכניס בו מכות רצח , כולל אקדח טייזר , באלימות שמזעזעת כל מי שרואה את הסרטון .
-plenary_tokens: אדוני,הזה,כל
-probability of plenary sentence in plenary corpus: -424.14
-probability of plenary sentence in committee corpus: -433.63
+original_sentence: אז לא תהיה משפחה ולא תהיה אשה .
+masked_sentence: אז [*] תהיה משפחה ולא תהיה אשה .
+plenary_sentence: אז אני תהיה משפחה ולא תהיה אשה .
+plenary_tokens: אני
+probability of plenary sentence in plenary corpus: -115.59
+probability of plenary sentence in committee corpus: -114.12
 
-original_sentence: עם כל הכבוד לכם , אני לא מסכים שיוסיפו באמצע הלילה עשרה חוקים בלי ידיעה מראש .
-masked_sentence: עם כל הכבוד לכם , אני לא מסכים שיוסיפו באמצע הלילה עשרה חוקים [*] ידיעה מראש .
-plenary_sentence: עם כל הכבוד לכם , אני לא מסכים שיוסיפו באמצע הלילה עשרה חוקים אדוני ידיעה מראש .
-plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -222.78
-probability of plenary sentence in committee corpus: -225.67
+original_sentence: אני חושב , שהצעדים שנקט חבר הכנסת גדליה גל עם חברים אחרים , שהקדישו מזמנם בשבוע שעבר וזימנו חברי כנסת לדיון לא פורמלי במושב כפר - ויתקין , בביתו של חבר הכנסת גדליה גל , כדי לחשוב מה אנחנו יכולים לעשות כדי ליצור קוד אתי להתנהגות חברי הכנסת – אני חושב שזה מעשה בשעתו ומעשה שאסור לנו לחדול ממנו ולהסתפק בו , אלא אנחנו צריכים להמשיך ולדון בו בוועדת הכנסת ובכל פינה בבית הזה , בסיעות שלו , על מנת לנסות ליצור משהו חדש .
+masked_sentence: אני [*] , שהצעדים שנקט חבר הכנסת גדליה גל עם חברים אחרים , שהקדישו מזמנם בשבוע שעבר וזימנו חברי כנסת לדיון [*] פורמלי במושב כפר - [*] , בביתו [*] חבר הכנסת גדליה גל , כדי לחשוב מה אנחנו יכולים לעשות כדי ליצור [*] אתי להתנהגות חברי הכנסת – אני חושב שזה מעשה בשעתו ומעשה שאסור לנו לחדול ממנו ולהסתפק בו [*] אלא אנחנו צריכים להמשיך ולדון בו בוועדת הכנסת ובכל פינה בבית הזה , בסיעות שלו , על [*] [*] ליצור משהו חדש .
+plenary_sentence: אני רוצה , שהצעדים שנקט חבר הכנסת גדליה גל עם חברים אחרים , שהקדישו מזמנם בשבוע שעבר וזימנו חברי כנסת לדיון , פורמלי במושב כפר - ראש , בביתו , חבר הכנסת גדליה גל , כדי לחשוב מה אנחנו יכולים לעשות כדי ליצור , אתי להתנהגות חברי הכנסת – אני חושב שזה מעשה בשעתו ומעשה שאסור לנו לחדול ממנו ולהסתפק בו , אלא אנחנו צריכים להמשיך ולדון בו בוועדת הכנסת ובכל פינה בבית הזה , בסיעות שלו , על - ידי ליצור משהו חדש .
+plenary_tokens: רוצה, ,, ראש, ,, ,, ,, -, ידי
+probability of plenary sentence in plenary corpus: -1147.57
+probability of plenary sentence in committee corpus: -1206.09
 
-original_sentence: אני באמת גאה בזה כבן לעם היהודי .
-masked_sentence: אני באמת גאה בזה כבן לעם היהודי [*]
-plenary_sentence: אני באמת גאה בזה כבן לעם היהודי יש
-plenary_tokens: יש
-probability of plenary sentence in plenary corpus: -114.97
-probability of plenary sentence in committee corpus: -116.43
+original_sentence: מיכאל קליינר ( חרות – התנועה הלאומית ) :
+masked_sentence: [*] קליינר ( חרות – התנועה הלאומית ) :
+plenary_sentence: ( קליינר ( חרות – התנועה הלאומית ) :
+plenary_tokens: (
+probability of plenary sentence in plenary corpus: -92.47
+probability of plenary sentence in committee corpus: -130.97
 
-original_sentence: אני צריך פה – זה לא הוגן .
-masked_sentence: אני צריך [*] – זה לא הוגן .
-plenary_sentence: אני צריך להיות – זה לא הוגן .
-plenary_tokens: להיות
-probability of plenary sentence in plenary corpus: -96.42
-probability of plenary sentence in committee corpus: -96.86
+original_sentence: אני חושב שזה מקובל על כולם , אדוני היושב - ראש .
+masked_sentence: אני [*] שזה מקובל על כולם , אדוני היושב - ראש .
+plenary_sentence: אני רוצה שזה מקובל על כולם , אדוני היושב - ראש .
+plenary_tokens: רוצה
+probability of plenary sentence in plenary corpus: -126.41
+probability of plenary sentence in committee corpus: -137.34
 
-original_sentence: החיילים הופקדו על שמירת גדר ההפרדה , וכמעט מיותר להזכיר באיזו מתיחות ביטחונית מתמדת מצויים כוחות הביטחון כבר למעלה משלוש שנים באזור קו התפר .
-masked_sentence: החיילים הופקדו על שמירת גדר ההפרדה , וכמעט מיותר להזכיר באיזו מתיחות ביטחונית מתמדת מצויים [*] הביטחון כבר למעלה משלוש שנים באזור קו התפר [*]
-plenary_sentence: החיילים הופקדו על שמירת גדר ההפרדה , וכמעט מיותר להזכיר באיזו מתיחות ביטחונית מתמדת מצויים אדוני הביטחון כבר למעלה משלוש שנים באזור קו התפר אדוני
-plenary_tokens: אדוני,אדוני
-probability of plenary sentence in plenary corpus: -377.74
-probability of plenary sentence in committee corpus: -389.08
+original_sentence: אנחנו מדברים על 10 - 12 מיליארד שקלים .
+masked_sentence: [*] מדברים על 10 - 12 מיליארד שקלים .
+plenary_sentence: ( מדברים על 10 - 12 מיליארד שקלים .
+plenary_tokens: (
+probability of plenary sentence in plenary corpus: -123.43
+probability of plenary sentence in committee corpus: -130.77
 
-original_sentence: בישראל יש 27 פסיכיאטרים בלבד אשר דוברים את השפה הערבית .
-masked_sentence: בישראל יש 27 פסיכיאטרים בלבד אשר [*] את השפה הערבית .
-plenary_sentence: בישראל יש 27 פסיכיאטרים בלבד אשר יש את השפה הערבית .
-plenary_tokens: יש
-probability of plenary sentence in plenary corpus: -158.34
-probability of plenary sentence in committee corpus: -163.89
+original_sentence: תאמינו לי , כשאני מגיעה בשעה 08 :
+masked_sentence: תאמינו לי [*] כשאני מגיעה בשעה 08 :
+plenary_sentence: תאמינו לי , כשאני מגיעה בשעה 08 :
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -119.37
+probability of plenary sentence in committee corpus: -125.52
 
-original_sentence: חקירת העצור יגאל ביטון החלה בטרם כניסת השבת ובמהלך החקירה נכנסה השבת .
-masked_sentence: חקירת העצור יגאל ביטון החלה בטרם כניסת השבת ובמהלך החקירה נכנסה השבת [*]
-plenary_sentence: חקירת העצור יגאל ביטון החלה בטרם כניסת השבת ובמהלך החקירה נכנסה השבת אדוני
-plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -204.09
-probability of plenary sentence in committee corpus: -211.74
+original_sentence: אדוני היושב - ראש , אתה יודע שלא מורידים חזן מהתיבה .
+masked_sentence: אדוני היושב - ראש , אתה יודע שלא מורידים חזן [*] .
+plenary_sentence: אדוני היושב - ראש , אתה יודע שלא מורידים חזן , .
+plenary_tokens: ,
+probability of plenary sentence in plenary corpus: -125.40
+probability of plenary sentence in committee corpus: -143.51
 
-original_sentence: ללא ספק , רבים מבין המשתמשים בסמים מתחילים בסמים קלים ומסיימים בסמים קשים .
-masked_sentence: ללא ספק , רבים מבין המשתמשים בסמים מתחילים בסמים [*] ומסיימים בסמים קשים .
-plenary_sentence: ללא ספק , רבים מבין המשתמשים בסמים מתחילים בסמים אדוני ומסיימים בסמים קשים .
-plenary_tokens: אדוני
-probability of plenary sentence in plenary corpus: -208.20
-probability of plenary sentence in committee corpus: -210.20
+original_sentence: סליחה , חבר הכנסת פנחסי , אני לא שומע .
+masked_sentence: סליחה , חבר [*] פנחסי , אני לא שומע .
+plenary_sentence: סליחה , חבר הכנסת פנחסי , אני לא שומע .
+plenary_tokens: הכנסת
+probability of plenary sentence in plenary corpus: -114.33
+probability of plenary sentence in committee corpus: -125.74
 
