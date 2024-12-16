@@ -9,8 +9,8 @@ import json
 class Trigram_LM:
     def __init__(self):
         self.lambda_trigram = 0.7
-        self.lambda_bigram = 0.29
-        self.lambda_unigram = 0.01
+        self.lambda_bigram = 0.01
+        self.lambda_unigram = 0.29
         self.total_tokens = 0
         self.vocab_size = 0
         self.unigram_counts = Counter()
@@ -19,18 +19,21 @@ class Trigram_LM:
 
     # a function to calculate the smoothed probability of an ngram using laplace smoothing
     def compute_smoothed_probability(self, ngram, ngram_type):
-        ngram_type_map = {
-            1: (self.unigram_counts, self.total_tokens),
-            2: (self.bigram_counts, self.unigram_counts.get(ngram[0], 0) if len(ngram) >= 1 else 0),
-            3: (self.trigram_counts, self.bigram_counts.get((ngram[0], ngram[1]), 0) if len(ngram) >= 2 else 0)
-        }
+        if ngram_type == 1:
+            count = self.unigram_counts[ngram[0]]
+            total = self.total_tokens
+        elif ngram_type == 2:
+            count = self.bigram_counts[ngram]
+            total = self.unigram_counts[ngram[0]] if ngram[0] in self.unigram_counts else 0
+        elif ngram_type == 3:
+            count = self.trigram_counts[ngram]
+            bigram = (ngram[0], ngram[1])
+            total = self.bigram_counts[bigram] if bigram in self.bigram_counts else 0
+        else:
+            raise ValueError("Invalid ngram type")
 
-        if len(ngram) < ngram_type:
-            return 1 / (self.vocab_size + 1)
-
-        counts, total = ngram_type_map[ngram_type]
-        count = counts.get(ngram, 0)
         return (count + 1) / (total + self.vocab_size)
+
 
     # the following function calculates the probability of a sentence
     def calculate_prob_of_sentence(self, sentence):
@@ -70,11 +73,8 @@ class Trigram_LM:
 
     # a function to prepare each sentence if there is a need to add dummy tokens
     def prepare_context_tokens(self, context):
-        if isinstance(context, str):
-            tokens = context.split()
-        else:
-            tokens = context
-        return ['s_1', 's_1'] + tokens if len(tokens) < 2 else tokens
+        tokens = context.split() if isinstance(context, str) else context
+        return ['s_1', 's_1'] + tokens[-2:] if len(tokens) < 2 else tokens
 
     # a function that computes the probability of the ngrams and then calculates the combined probability
     def compute_combined_probability(self, candidate, prev_2, prev_1):
