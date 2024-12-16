@@ -8,9 +8,9 @@ import json
 
 class Trigram_LM:
     def __init__(self):
-        self.lambda_trigram = 0.7
-        self.lambda_bigram = 0.01
-        self.lambda_unigram = 0.29
+        self.lambda_trigram = 0.99
+        self.lambda_bigram = 0.003
+        self.lambda_unigram = 0.007
         self.total_tokens = 0
         self.vocab_size = 0
         self.unigram_counts = Counter()
@@ -228,8 +228,16 @@ class Trigram_LM:
         return masked_sentences
 
 # a function to calculate the perplexity of the model
-def compute_masked_perplexity(model, original_sentence, masked_sentence):
-    # an inner function that will be only used in the outer function to get the ngrams probabilities
+def compute_guessed_perplexity(model, guessed_sentence):
+    """
+    Compute the perplexity of the guessed sentence based on the model's probabilities.
+    Args:
+        model (Trigram_LM): Trained trigram model.
+        guessed_sentence (str): Sentence formed after guessing missing tokens.
+
+    Returns:
+        float: Perplexity of the guessed sentence.
+    """
     def get_ngram_probabilities(model, tokens, index):
         unigram = (tokens[index],)
         bigram = (tokens[index - 1], tokens[index])
@@ -243,20 +251,23 @@ def compute_masked_perplexity(model, original_sentence, masked_sentence):
                 model.lambda_bigram * p_bigram +
                 model.lambda_trigram * p_trigram)
 
-    original_tokens = ['s_1', 's_1'] + original_sentence.split() + ['s_2']
-    masked_tokens = ['s_1', 's_1'] + masked_sentence.split() + ['s_2']
-    masked_indices = [idx for idx, token in enumerate(masked_tokens) if token == '[*]']
+    # Prepare tokens for the guessed sentence
+    guessed_tokens = ['s_1', 's_1'] + guessed_sentence.split() + ['s_2']
 
+    # Compute probabilities for each token starting from the third token
     probabilities = [
-        get_ngram_probabilities(model, original_tokens, idx)
-        for idx in masked_indices if idx >= 2
+        get_ngram_probabilities(model, guessed_tokens, idx)
+        for idx in range(2, len(guessed_tokens))
     ]
 
+    # Avoid division by zero in case of empty probabilities
     if not probabilities:
         return float('inf')
 
+    # Compute the average log probability and perplexity
     average_log_prob = sum(math.log2(p) for p in probabilities) / len(probabilities)
     return 2 ** (-average_log_prob)
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
@@ -336,8 +347,8 @@ if __name__ == '__main__':
 
     perplexity_file = os.path.join(output_dir, "perplexity_result.txt")
     total_perplexity = sum(
-        compute_masked_perplexity(plenary_model, o, m) for o, m in zip(sampled_sentences, masked_sentences)
+        compute_guessed_perplexity(plenary_model, g) for g in [final_sentence for _, _, final_sentence, _, _, _ in results]
     )
-    average_perplexity = total_perplexity / len(sampled_sentences)
+    average_perplexity = total_perplexity / len(results)
     with open(perplexity_file, 'w', encoding='utf-8') as pp_f:
         pp_f.write(f"{average_perplexity:.2f}\n")
