@@ -8,9 +8,9 @@ import json
 
 class Trigram_LM:
     def __init__(self):
-        self.lambda_trigram = 0.99
+        self.lambda_trigram = 0.007
         self.lambda_bigram = 0.003
-        self.lambda_unigram = 0.007
+        self.lambda_unigram = 0.99
         self.total_tokens = 0
         self.vocab_size = 0
         self.unigram_counts = Counter()
