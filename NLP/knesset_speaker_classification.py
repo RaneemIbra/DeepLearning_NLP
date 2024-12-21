@@ -3,6 +3,7 @@ import pandas as pd
 import sys
 import json
 import random
+from sklearn.feature_extraction.text import CountVectorizer
 random.seed(42)
 np.random.seed(42)
 
@@ -32,6 +33,12 @@ map_speakers_to_aliases = {
 
 def get_speaker_name_from_alias(name: str) -> str:
     return map_speakers_to_aliases.get(name, name)
+
+def create_feature_vector(df):
+    vectorizer = CountVectorizer()
+    features = vectorizer.fit_transform(df['sentence_text'])
+    labels = df['class']
+    return features, labels, vectorizer
 
 if __name__ == '__main__': 
     if len(sys.argv) != 3:
@@ -99,9 +106,11 @@ if __name__ == '__main__':
         .apply(lambda x: x.sample(n=minimum_counter, random_state=42))
     )
     df_downsampled.to_csv(output_file, index=False, encoding='utf-8-sig')
-
+    features, labels, vectorizer = create_feature_vector(df_downsampled)
     print(df_downsampled['class'].value_counts())
     print(f"Top Speakers:")
     print(f"1. {top_speakers[1][0]}: {top_speakers[1][1]} sentences")
     print(f"2. {top_speakers[2][0]}: {top_speakers[2][1]} sentences")
     print(f"Data saved to {output_file}")
+    print(f"Feature matrix shape: {features.shape}")
+    print(f"Labels: {labels.unique()}")
