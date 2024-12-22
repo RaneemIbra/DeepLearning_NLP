@@ -9,6 +9,7 @@ from sklearn.model_selection import cross_val_predict, cross_val_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
 random.seed(42)
 np.random.seed(42)
 
@@ -83,6 +84,17 @@ def eval_classifier(features, labels, classifier_name):
         print(f"classification report for {name}:\n{report}\n")
     return results
 
+def classify_sentences(input_file, output_file, model, vectorizer, label_encoder):
+    with open(input_file, 'r', encoding='utf-8') as f:
+        sentences = [line.strip() for line in f if line.strip()]
+
+    features = vectorizer.transform(sentences)
+    predictions = model.predict(features)
+    classified_labels = label_encoder.inverse_transform(predictions)
+    with open(output_file, 'w', encoding='utf-8') as f:
+        for label in classified_labels:
+            f.write(f"{label}\n")
+
 if __name__ == '__main__': 
     if len(sys.argv) != 3:
         print("Usage: python script.py <input_jsonl_file> <output_csv_file>")
@@ -124,9 +136,9 @@ if __name__ == '__main__':
     data = []
     for speaker_name, speaker_object in speaker_data.items():
         if speaker_name == top_speakers[1][0]:
-            label = 'first speaker'
+            label = 'first'
         elif speaker_name == top_speakers[2][0]:
-            label = 'second speaker'
+            label = 'second'
         else:
             label = 'other'
         for objects in speaker_object.objects:
@@ -141,7 +153,7 @@ if __name__ == '__main__':
             }
             data.append(row)
 
-    df = pd.DataFrame(data) # break then we will be back :)
+    df = pd.DataFrame(data)
 
     minimum_counter = df['class'].value_counts().min()
     df_downsampled = (
@@ -157,4 +169,13 @@ if __name__ == '__main__':
     scaled_features = scaler.fit_transform(custom_features)
     tfidf_results = eval_classifier(features, df_downsampled['class'], 'TFIDF vector')
     custom_results = eval_classifier(scaled_features, df_downsampled['class'], 'custom vector')
-    print("evaluation completed")
+    
+    label_encoder = LabelEncoder()
+    encoded_labels = label_encoder.fit_transform(labels)
+
+    logistic_regression_model = LogisticRegression(max_iter=1000, random_state=42)
+    logistic_regression_model.fit(features, encoded_labels)
+
+    knesset_sentences = "knesset_sentences.txt"
+    classification_output = "classification_results.txt"
+    classify_sentences(knesset_sentences, classification_output, logistic_regression_model, vectorizer, label_encoder)
