@@ -4,6 +4,11 @@ import sys
 import json
 import random
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import classification_report
+from sklearn.model_selection import cross_val_predict, cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
 random.seed(42)
 np.random.seed(42)
 
@@ -56,6 +61,27 @@ def create_custom_feature_vector(df):
         'question',
     ]].values
     return custom_features
+
+def eval_classifier(features, labels, classifier_name):
+    classifiers = {
+        'KNN': KNeighborsClassifier(n_neighbors=5),
+        'LogisticRegression': LogisticRegression(max_iter= 1000, random_state=42)
+    }
+
+    results = {}
+    print("\n")
+    print(classifier_name)
+    for name, classifier in classifiers.items():
+        predictions = cross_val_predict(classifier, features, labels, cv=5)
+        scores = cross_val_score(classifier, features, labels, cv=5)
+        report = classification_report(labels, predictions, target_names=labels.unique(), zero_division=0)
+        results[name] = {
+            "mean_accuracy": np.mean(scores),
+            "classification_report": report
+        }
+        print(f"mean accuracy: {np.mean(scores):.4f}")
+        print(f"classification report for {name}:\n{report}\n")
+    return results
 
 if __name__ == '__main__': 
     if len(sys.argv) != 3:
@@ -115,7 +141,7 @@ if __name__ == '__main__':
             }
             data.append(row)
 
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(data) # break then we will be back :)
 
     minimum_counter = df['class'].value_counts().min()
     df_downsampled = (
@@ -127,9 +153,8 @@ if __name__ == '__main__':
     features, labels, vectorizer = create_feature_vector(df_downsampled)
     custom_features = create_custom_feature_vector(df_downsampled)
 
-    print(df_downsampled['class'].value_counts())
-    print(f"Top Speakers:")
-    print(f"1. {top_speakers[1][0]}: {top_speakers[1][1]} sentences")
-    print(f"2. {top_speakers[2][0]}: {top_speakers[2][1]} sentences")
-    print(f"Data saved to {output_file}")
-    print(f"custom features shape: {custom_features.shape}")
+    scaler = StandardScaler()
+    scaled_features = scaler.fit_transform(custom_features)
+    tfidf_results = eval_classifier(features, df_downsampled['class'], 'TFIDF vector')
+    custom_results = eval_classifier(scaled_features, df_downsampled['class'], 'custom vector')
+    print("evaluation completed")
