@@ -13,7 +13,6 @@ from sklearn.preprocessing import LabelEncoder
 random.seed(42)
 np.random.seed(42)
 
-# Why not combine them into one class? is there an actual reason?
 class other_speakers:
     def __init__(self, name):
         self.name = name
