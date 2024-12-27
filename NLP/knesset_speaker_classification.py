@@ -3,7 +3,7 @@ import pandas as pd
 import sys
 import json
 import random
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_val_predict, cross_val_score
 from sklearn.linear_model import LogisticRegression
@@ -40,7 +40,7 @@ def get_speaker_name_from_alias(name: str) -> str:
     return map_speakers_to_aliases.get(name, name)
 
 def create_feature_vector(df):
-    vectorizer = CountVectorizer()
+    vectorizer = TfidfVectorizer()
     features = vectorizer.fit_transform(df['sentence_text'])
     labels = df['class']
     return features, labels, vectorizer
