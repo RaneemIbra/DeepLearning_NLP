@@ -40,7 +40,7 @@ def get_speaker_name_from_alias(name: str) -> str:
     return map_speakers_to_aliases.get(name, name)
 
 def create_feature_vector(df):
-    vectorizer = TfidfVectorizer()
+    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df= 0.4, ngram_range=(1,2))
     features = vectorizer.fit_transform(df['sentence_text'])
     labels = df['class']
     return features, labels, vectorizer
@@ -64,7 +64,7 @@ def create_custom_feature_vector(df):
 
 def eval_classifier(features, labels, classifier_name):
     classifiers = {
-        'KNN': KNeighborsClassifier(n_neighbors=5),
+        'KNN': KNeighborsClassifier(n_neighbors=9),
         'LogisticRegression': LogisticRegression(max_iter= 1000, random_state=42)
     }
 
