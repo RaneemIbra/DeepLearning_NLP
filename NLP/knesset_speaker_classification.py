@@ -92,8 +92,8 @@ def eval_classifier(features, labels, classifier_name):
             "mean_accuracy": np.mean(scores),
             "classification_report": report
         }
-        print(f"mean accuracy: {np.mean(scores):.4f}")
-        print(f"classification report for {name}:\n{report}\n")
+        # print(f"mean accuracy: {np.mean(scores):.4f}")
+        # print(f"classification report for {name}:\n{report}\n")
     return results
 
 # a function to classify the sentences given in the knesset_sentences.txt file
@@ -110,12 +110,13 @@ def classify_sentences(input_file, output_file, model, vectorizer, label_encoder
             f.write(f"{label}\n")
 
 if __name__ == '__main__': 
-    if len(sys.argv) != 3:
-        print("Usage: python script.py <input_jsonl_file> <output_csv_file>")
+    if len(sys.argv) != 4:
+        print("Usage: python script.py <input_jsonl_file> <input_sentences_file> <output_csv_file>")
         sys.exit(1)
 
     input_file = sys.argv[1]
-    output_file = sys.argv[2]
+    knesset_sentences = sys.argv[2]
+    output_file = sys.argv[3]
 
     # create instances of the first and second speakers that we already found by running a small script
     first_speaker_instance = first_speaker("ראובן ריבלין")
@@ -184,7 +185,7 @@ if __name__ == '__main__':
         df.groupby('class', group_keys=False)
         .apply(lambda x: x.sample(n=minimum_counter, random_state=42))
     )
-    df_downsampled.to_csv(output_file, index=False, encoding='utf-8-sig')
+    # df_downsampled.to_csv(output_file, index=False, encoding='utf-8-sig')
 
     # create the feature vector and the custom vector by calling the functions that we built
     features, labels, vectorizer = create_feature_vector(df_downsampled)
@@ -207,6 +208,5 @@ if __name__ == '__main__':
     logistic_regression_model.fit(features, encoded_labels)
 
     # after training the model we run it on the unseen sentences, and save the classification result
-    knesset_sentences = "knesset_sentences.txt"
     classification_output = "classification_results.txt"
     classify_sentences(knesset_sentences, classification_output, logistic_regression_model, vectorizer, label_encoder)
