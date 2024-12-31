@@ -114,8 +114,8 @@ def eval_classifier(features, labels, neighbors_count, weights, metric, C, solve
             "mean_accuracy": np.mean(scores),
             "classification_report": report
         }
-        # print(f"mean accuracy: {np.mean(scores):.4f}")
-        # print(f"classification report for {name}:\n{report}\n")
+        print(f"mean accuracy: {np.mean(scores):.4f}")
+        print(f"classification report for {name}:\n{report}\n")
     return results
 
 # a function to filter the dataframe for binary classification
@@ -228,14 +228,14 @@ if __name__ == '__main__':
     binary_custom_features = create_custom_feature_vector(df_binary)
     scaled_binary_features = scaler.fit_transform(binary_custom_features)
 
-    # print("Binary Classification Results:")
+    print("Binary Classification Results:")
     # evaluate classifiers on binary classification
     binary_tfidf_results = eval_classifier(binary_features, binary_labels, 7, 'distance', 'euclidean', 10.0, 'liblinear')
     binary_custom_results = eval_classifier(scaled_binary_features, binary_labels, 11, 'distance', 'manhattan', 0.1, 'lbfgs')
 
-    # print("Multiclass Classification Results:")
+    print("Multiclass Classification Results:")
     # evaluate classifiers on multiclass classification
-    tfidf_results = eval_classifier(features, df_downsampled['class'], 7, 'distance', 'euclidean', 10.0, 'liblinear')
+    tfidf_results = eval_classifier(features, df_downsampled['class'], 7, 'distance', 'euclidean', 10.0, 'lbfgs')
     custom_results = eval_classifier(scaled_features, df_downsampled['class'], 11, 'distance', 'manhattan', 0.1, 'lbfgs')
 
     # encode the labels to be able to pass valid value

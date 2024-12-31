@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
     # print("Multiclass Classification Results:")
     # evaluate classifiers on multiclass classification
-    tfidf_results = eval_classifier(features, df_downsampled['class'], 7, 'distance', 'euclidean', 10.0, 'liblinear')
+    tfidf_results = eval_classifier(features, df_downsampled['class'], 7, 'distance', 'euclidean', 10.0, 'lbfgs')
     custom_results = eval_classifier(scaled_features, df_downsampled['class'], 11, 'distance', 'manhattan', 0.1, 'lbfgs')
 
     # encode the labels to be able to pass valid value
