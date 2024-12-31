@@ -231,7 +231,7 @@ if __name__ == '__main__':
     # print("Binary Classification Results:")
     # evaluate classifiers on binary classification
     binary_tfidf_results = eval_classifier(binary_features, binary_labels, 7, 'distance', 'euclidean', 10.0, 'liblinear')
-    binary_custom_results = eval_classifier(scaled_binary_features, binary_labels, 11, 'distance', 'manhattan', 0.1, 'lbfgs')
+    binary_custom_results = eval_classifier(scaled_binary_features, binary_labels, 11, 'distance', 'manhattan', 0.1, 'liblinear')
 
     # print("Multiclass Classification Results:")
     # evaluate classifiers on multiclass classification
