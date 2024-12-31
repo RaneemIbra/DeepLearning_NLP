@@ -8,8 +8,10 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_val_predict, cross_val_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import GridSearchCV, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
+from sklearn.feature_selection import SelectKBest, chi2
 random.seed(42)
 np.random.seed(42)
 
@@ -48,10 +50,19 @@ def get_speaker_name_from_alias(name: str) -> str:
 def create_feature_vector(df):
     # we chose the tfidf vectorizer because it works better with our dataset
     # we also accounted for scaling and we took into consideration unigrams and bigrams
-    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df= 0.4, ngram_range=(1,2))
+    vectorizer = TfidfVectorizer(
+        sublinear_tf=True,
+        max_df=0.4,
+        ngram_range=(1,2),
+        max_features=5000,
+        min_df=2
+    )
     features = vectorizer.fit_transform(df['sentence_text'])
     labels = df['class']
-    return features, labels, vectorizer
+    selector = SelectKBest(chi2, k=1000)
+    selected_features = selector.fit_transform(features, labels)
+    
+    return selected_features, labels, vectorizer, selector
 
 # a function to create a custom feature vector, we take into count the length of the sentence, and punctuation
 def create_custom_feature_vector(df):
@@ -61,6 +72,12 @@ def create_custom_feature_vector(df):
     df['quotations'] = df['sentence_text'].str.count(r'"') + df['sentence_text'].str.count(r"'")
     df['dashes'] = df['sentence_text'].str.count(r'-')
     df['question'] = df['sentence_text'].str.count(r'\?')
+    df['protocol_number'] = df['protocol_number'].astype(float)
+    df['knesset_number'] = df['knesset_number'].astype(float)
+    
+    label_encoder = LabelEncoder()
+    df['protocol_type'] = label_encoder.fit_transform(df['protocol_type'])
+    
     custom_features = df[[
         'sentence_length',
         'commas',
@@ -68,6 +85,9 @@ def create_custom_feature_vector(df):
         'quotations',
         'dashes',
         'question',
+        'protocol_number',
+        'knesset_number',
+        'protocol_type'
     ]].values
     return custom_features
 
@@ -80,8 +100,6 @@ def eval_classifier(features, labels, classifier_name):
     }
 
     results = {}
-    print("\n")
-    print(classifier_name)
     # iterate over the classifiers and use cross validation with 5 folds to evaluate them
     # then report the classification and return the results
     for name, classifier in classifiers.items():
@@ -98,16 +116,18 @@ def eval_classifier(features, labels, classifier_name):
 
 # a function to classify the sentences given in the knesset_sentences.txt file
 # we open the file then for each line we try to classify it using the model passed
-def classify_sentences(input_file, output_file, model, vectorizer, label_encoder):
+def classify_sentences(input_file, output_file, model, vectorizer, label_encoder, selector):
     with open(input_file, 'r', encoding='utf-8') as f:
-        sentences = [line.strip() for line in f if line.strip()]
+        sentences = f.readlines()
 
     features = vectorizer.transform(sentences)
-    predictions = model.predict(features)
-    classified_labels = label_encoder.inverse_transform(predictions)
+    selected_features = selector.transform(features)
+    predictions = model.predict(selected_features)
+    decoded_predictions = label_encoder.inverse_transform(predictions)
+
     with open(output_file, 'w', encoding='utf-8') as f:
-        for label in classified_labels:
-            f.write(f"{label}\n")
+        for sentence, prediction in zip(sentences, decoded_predictions):
+            f.write(f"{prediction}\n")
 
 if __name__ == '__main__': 
     if len(sys.argv) != 4:
@@ -188,7 +208,7 @@ if __name__ == '__main__':
     # df_downsampled.to_csv(output_file, index=False, encoding='utf-8-sig')
 
     # create the feature vector and the custom vector by calling the functions that we built
-    features, labels, vectorizer = create_feature_vector(df_downsampled)
+    features, labels, vectorizer, selector = create_feature_vector(df_downsampled)
     custom_features = create_custom_feature_vector(df_downsampled)
 
     # scale the data
@@ -203,10 +223,26 @@ if __name__ == '__main__':
     label_encoder = LabelEncoder()
     encoded_labels = label_encoder.fit_transform(labels)
 
+    param_grid = {
+    'C': [0.1, 1.0, 10.0],
+    'max_iter': [1000],
+    'solver': ['lbfgs', 'liblinear']
+    }
+
+    grid_search = GridSearchCV(
+        LogisticRegression(random_state=42),
+        param_grid,
+        cv=5,
+        scoring='accuracy'
+    )
+
+    grid_search.fit(features, encoded_labels)
+    best_lr = grid_search.best_estimator_
+
     # we chose the logistic regression model because it classified the data better than KNN
     logistic_regression_model = LogisticRegression(max_iter=1000, random_state=42)
     logistic_regression_model.fit(features, encoded_labels)
 
     # after training the model we run it on the unseen sentences, and save the classification result
     classification_output = "classification_results.txt"
-    classify_sentences(knesset_sentences, classification_output, logistic_regression_model, vectorizer, label_encoder)
+    classify_sentences(knesset_sentences, classification_output, logistic_regression_model, vectorizer, label_encoder, selector) 
