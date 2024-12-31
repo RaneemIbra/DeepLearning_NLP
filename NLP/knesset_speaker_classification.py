@@ -92,26 +92,29 @@ def create_custom_feature_vector(df):
     return custom_features
 
 # a function to evaluate the classifiers
-def eval_classifier(features, labels, classifier_name):
-    # define the classifiers and map them to a key, the parameters choice is explained in the pdf
+def eval_classifier(features, labels, neighbors_count, weights, metric, C, solver):
+    # define the classifiers with the best parameters
     classifiers = {
-        'KNN': KNeighborsClassifier(n_neighbors=9),
-        'LogisticRegression': LogisticRegression(max_iter= 1000, random_state=42)
+        'KNN': KNeighborsClassifier(n_neighbors=neighbors_count, weights=weights, metric=metric),
+        'LogisticRegression': LogisticRegression(C=C, solver=solver, max_iter=1000, random_state=42)
     }
 
     results = {}
+    # Encode labels
+    label_encoder = LabelEncoder()
+    encoded_labels = label_encoder.fit_transform(labels)
+
     # iterate over the classifiers and use cross validation with 5 folds to evaluate them
-    # then report the classification and return the results
     for name, classifier in classifiers.items():
-        predictions = cross_val_predict(classifier, features, labels, cv=5)
-        scores = cross_val_score(classifier, features, labels, cv=5)
-        report = classification_report(labels, predictions, target_names=labels.unique(), zero_division=0)
+        predictions = cross_val_predict(classifier, features, encoded_labels, cv=5)
+        scores = cross_val_score(classifier, features, encoded_labels, cv=5)
+        report = classification_report(encoded_labels, predictions, target_names=label_encoder.classes_, zero_division=0)
         results[name] = {
             "mean_accuracy": np.mean(scores),
             "classification_report": report
         }
-        # print(f"mean accuracy: {np.mean(scores):.4f}")
-        # print(f"classification report for {name}:\n{report}\n")
+        print(f"mean accuracy: {np.mean(scores):.4f}")
+        print(f"classification report for {name}:\n{report}\n")
     return results
 
 # a function to classify the sentences given in the knesset_sentences.txt file
@@ -216,33 +219,17 @@ if __name__ == '__main__':
     scaled_features = scaler.fit_transform(custom_features)
 
     # then evaluate the classifiers on the vectors that we created
-    tfidf_results = eval_classifier(features, df_downsampled['class'], 'TFIDF vector')
-    custom_results = eval_classifier(scaled_features, df_downsampled['class'], 'custom vector')
+    tfidf_results = eval_classifier(features, df_downsampled['class'], 7, 'distance', 'euclidean', 10.0, 'liblinear')
+    custom_results = eval_classifier(scaled_features, df_downsampled['class'], 11, 'distance', 'manhattan', 0.1, 'lbfgs')
     
     # encode the labels to be able to pass valid value
     label_encoder = LabelEncoder()
     encoded_labels = label_encoder.fit_transform(labels)
 
-    param_grid = {
-    'C': [0.1, 1.0, 10.0],
-    'max_iter': [1000],
-    'solver': ['lbfgs', 'liblinear']
-    }
-
-    grid_search = GridSearchCV(
-        LogisticRegression(random_state=42),
-        param_grid,
-        cv=5,
-        scoring='accuracy'
-    )
-
-    grid_search.fit(features, encoded_labels)
-    best_lr = grid_search.best_estimator_
-
-    # we chose the logistic regression model because it classified the data better than KNN
-    logistic_regression_model = LogisticRegression(max_iter=1000, random_state=42)
+    # use the best parameters for Logistic Regression model
+    logistic_regression_model = LogisticRegression(C=10.0, solver='liblinear', max_iter=1000, random_state=42)
     logistic_regression_model.fit(features, encoded_labels)
 
     # after training the model we run it on the unseen sentences, and save the classification result
     classification_output = "classification_results.txt"
-    classify_sentences(knesset_sentences, classification_output, logistic_regression_model, vectorizer, label_encoder, selector) 
+    classify_sentences(knesset_sentences, classification_output, logistic_regression_model, vectorizer, label_encoder, selector)
