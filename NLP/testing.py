@@ -8,7 +8,7 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_val_predict, cross_val_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score
+from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_selection import SelectKBest, chi2
@@ -66,6 +66,7 @@ def create_feature_vector(df):
 
 # a function to create a custom feature vector, we take into count the length of the sentence, and punctuation
 def create_custom_feature_vector(df):
+    df = df.copy()
     df['sentence_length'] = df['sentence_text'].str.split().str.len()
     df['commas'] = df['sentence_text'].str.count(r',')
     df['period'] = df['sentence_text'].str.count(r'\.')
@@ -92,44 +93,34 @@ def create_custom_feature_vector(df):
     return custom_features
 
 # a function to evaluate the classifiers
-def eval_classifier(features, labels, classifier_name):
-    # define the classifiers and map them to a key, the parameters choice is explained in the pdf
+def eval_classifier(features, labels, neighbors_count, weights, metric, C, solver):
+    # define the classifiers with the best parameters
     classifiers = {
-        'KNN': KNeighborsClassifier(),
-        'LogisticRegression': LogisticRegression(max_iter=1000, random_state=42)
-    }
-
-    param_grids = {
-        'KNN': {
-            'n_neighbors': [3, 5, 7, 9, 11],
-            'weights': ['uniform', 'distance'],
-            'metric': ['euclidean', 'manhattan']
-        },
-        'LogisticRegression': {
-            'C': [0.1, 1.0, 10.0],
-            'solver': ['lbfgs', 'liblinear']
-        }
+        'KNN': KNeighborsClassifier(n_neighbors=neighbors_count, weights=weights, metric=metric),
+        'LogisticRegression': LogisticRegression(C=C, solver=solver, max_iter=1000, random_state=42)
     }
 
     results = {}
-    # Encode labels
+    # encode labels
     label_encoder = LabelEncoder()
     encoded_labels = label_encoder.fit_transform(labels)
 
-    # iterate over the classifiers and use GridSearchCV to find the best parameters
+    # iterate over the classifiers and use cross validation with 5 folds to evaluate them
     for name, classifier in classifiers.items():
-        grid_search = GridSearchCV(classifier, param_grids[name], cv=5, scoring='accuracy')
-        grid_search.fit(features, encoded_labels)
-        best_classifier = grid_search.best_estimator_
-        predictions = cross_val_predict(best_classifier, features, encoded_labels, cv=5)
-        scores = cross_val_score(best_classifier, features, encoded_labels, cv=5)
+        predictions = cross_val_predict(classifier, features, encoded_labels, cv=5)
+        scores = cross_val_score(classifier, features, encoded_labels, cv=5)
         report = classification_report(encoded_labels, predictions, target_names=label_encoder.classes_, zero_division=0)
         results[name] = {
-            "best_params": grid_search.best_params_,
             "mean_accuracy": np.mean(scores),
             "classification_report": report
         }
+        # print(f"mean accuracy: {np.mean(scores):.4f}")
+        # print(f"classification report for {name}:\n{report}\n")
     return results
+
+# a function to filter the dataframe for binary classification
+def filter_binary_classes(df):
+    return df[df['class'].isin(['first', 'second'])]
 
 # a function to classify the sentences given in the knesset_sentences.txt file
 # we open the file then for each line we try to classify it using the model passed
@@ -148,7 +139,7 @@ def classify_sentences(input_file, output_file, model, vectorizer, label_encoder
 
 if __name__ == '__main__': 
     if len(sys.argv) != 4:
-        print("Usage: python script.py <input_jsonl_file> <input_sentences_file> <output_csv_file>")
+        # print("Usage: python script.py <input_jsonl_file> <input_sentences_file> <output_csv_file>")
         sys.exit(1)
 
     input_file = sys.argv[1]
@@ -231,47 +222,28 @@ if __name__ == '__main__':
     scaler = StandardScaler()
     scaled_features = scaler.fit_transform(custom_features)
 
-    # then evaluate the classifiers on the vectors that we created
-    tfidf_results = eval_classifier(features, df_downsampled['class'], 'TFIDF vector')
-    custom_results = eval_classifier(scaled_features, df_downsampled['class'], 'custom vector')
-    
-    # print the results
-    print("TFIDF Vector Results:")
-    for model, result in tfidf_results.items():
-        print(f"Model: {model}")
-        print(f"Best Parameters: {result['best_params']}")
-        print(f"Mean Accuracy: {result['mean_accuracy']:.4f}")
-        print(f"Classification Report:\n{result['classification_report']}\n")
+    # binary classification
+    df_binary = filter_binary_classes(df_downsampled)
+    binary_features, binary_labels, _, _ = create_feature_vector(df_binary)
+    binary_custom_features = create_custom_feature_vector(df_binary)
+    scaled_binary_features = scaler.fit_transform(binary_custom_features)
 
-    print("Custom Vector Results:")
-    for model, result in custom_results.items():
-        print(f"Model: {model}")
-        print(f"Best Parameters: {result['best_params']}")
-        print(f"Mean Accuracy: {result['mean_accuracy']:.4f}")
-        print(f"Classification Report:\n{result['classification_report']}\n")
+    # print("Binary Classification Results:")
+    # evaluate classifiers on binary classification
+    binary_tfidf_results = eval_classifier(binary_features, binary_labels, 7, 'distance', 'euclidean', 10.0, 'liblinear')
+    binary_custom_results = eval_classifier(scaled_binary_features, binary_labels, 11, 'distance', 'manhattan', 0.1, 'lbfgs')
+
+    # print("Multiclass Classification Results:")
+    # evaluate classifiers on multiclass classification
+    tfidf_results = eval_classifier(features, df_downsampled['class'], 7, 'distance', 'euclidean', 10.0, 'liblinear')
+    custom_results = eval_classifier(scaled_features, df_downsampled['class'], 11, 'distance', 'manhattan', 0.1, 'lbfgs')
 
     # encode the labels to be able to pass valid value
     label_encoder = LabelEncoder()
     encoded_labels = label_encoder.fit_transform(labels)
 
-    param_grid = {
-    'C': [0.1, 1.0, 10.0],
-    'max_iter': [1000],
-    'solver': ['lbfgs', 'liblinear']
-    }
-
-    grid_search = GridSearchCV(
-        LogisticRegression(random_state=42),
-        param_grid,
-        cv=5,
-        scoring='accuracy'
-    )
-
-    grid_search.fit(features, encoded_labels)
-    best_lr = grid_search.best_estimator_
-
-    # we chose the logistic regression model because it classified the data better than KNN
-    logistic_regression_model = LogisticRegression(max_iter=1000, random_state=42)
+    # use the best parameters for Logistic Regression model
+    logistic_regression_model = LogisticRegression(C=10.0, solver='liblinear', max_iter=1000, random_state=42)
     logistic_regression_model.fit(features, encoded_labels)
 
     # after training the model we run it on the unseen sentences, and save the classification result
