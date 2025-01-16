@@ -2,18 +2,21 @@ from transformers import AutoTokenizer, AutoModelForMaskedLM
 import torch
 import sys
 
+# load the pre-trained Hebrew BERT model
 tokenizer = AutoTokenizer.from_pretrained("avichr/heBERT")
 model = AutoModelForMaskedLM.from_pretrained("avichr/heBERT")
 
+# load the masked sentences from the file
 def load_masked_sentences(filepath):
     sentences = []
     with open(filepath, 'r', encoding='utf-8') as file:
         for line in file:
             original_sentence = line.strip()
-            masked_sentence = original_sentence.replace("*", "[MASK]")
+            masked_sentence = original_sentence.replace("*", "MASK")
             sentences.append((original_sentence, masked_sentence))
     return sentences
 
+# predict the masked tokens in the sentence
 def predict_masked_tokens(masked_sentence):
     inputs = tokenizer(masked_sentence, return_tensors="pt")
     with torch.no_grad():

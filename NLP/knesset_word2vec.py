@@ -61,7 +61,6 @@ def find_most_similar_sentences(raw_sentences, embeddings, chosen_indices):
     results = []
 
     # Compute pairwise cosine similarities
-    print("Computing similarity matrix...")
     similarity_matrix = cosine_similarity(embeddings)
 
     for idx in chosen_indices:
@@ -93,7 +92,7 @@ if __name__ == '__main__':
     # load the corpus, preprocess the sentences and train the word2vec model
     raw_sentences = load_corpus(knesset_corpus_path)
     tokenized_sentences = preprocess_sentences(raw_sentences)
-    model = Word2Vec(tokenized_sentences, vector_size=100, window=5, min_count=1)
+    model = Word2Vec(tokenized_sentences, vector_size=50, window=5, min_count=1)
 
     model_path = output_dir + '/knesset_word2vec.model'
     output_file_path_similar_words = output_dir + '/knesset_similar_words.txt'
@@ -163,9 +162,6 @@ if __name__ == '__main__':
 
                         modified_sentence = modified_sentence.replace(word, replacement_word)
                         replacements.append((word, replacement_word))
-                        print(f"Top 3 replacements for '{word}' in '{sentence}':")
-                        for similar_word, score in similar_words:
-                            print(f"  {similar_word} ({score:.4f})")
 
                     except KeyError:
                         replacement_word = word
