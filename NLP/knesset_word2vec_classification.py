@@ -1,17 +1,43 @@
+import os
+import re
+import json
 import numpy as np
 import pandas as pd
-from sklearn.metrics import classification_report
-from sklearn.model_selection import cross_val_predict
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import LabelEncoder
-import random
-import json
 import sys
 from gensim.models import Word2Vec
-import re
-random.seed(42)
-np.random.seed(42)
+from sklearn.metrics import classification_report
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import LabelEncoder
 
+# a function to preprocess the corpus and return a list of tokenized sentences
+def preprocess_corpus(filepath):
+    sentences = []
+    with open(filepath, 'r', encoding='utf-8') as file:
+        for line in file:
+            record = json.loads(line)
+            sentence = record.get('sentence_text', '')
+            # remove non-Hebrew characters and tokenize the sentence
+            tokens = [re.sub(r'[^\u0590-\u05FF]', '', token) for token in sentence.split()]
+            tokens = [token for token in tokens if token and len(token) > 1]
+            if tokens:
+                sentences.append(tokens)
+    return sentences
+
+# a function to compute the embeddings of the sentences using the Word2Vec model
+def compute_embeddings(sentences, model_path):
+    model = Word2Vec.load(model_path)
+    embeddings = []
+    for sentence in sentences:
+        # compute the sentence embedding as the average of the word embeddings
+        word_vectors = [model.wv[word] for word in sentence if word in model.wv]
+        if word_vectors:
+            embeddings.append(np.mean(word_vectors, axis=0))
+        else:
+            embeddings.append(np.zeros(model.vector_size))
+    return embeddings
+
+# map the names that belong to one person to a single key to gather as many sentences
 map_speakers_to_aliases = {
     "ר' ריבלין": "ראובן ריבלין",
     "ראובן ריבלין": "ראובן ריבלין",
@@ -20,106 +46,68 @@ map_speakers_to_aliases = {
     "א' בורג": "א' בורג"
 }
 
+# function to retrieve the value associated with the many aliases the speaker goes by
 def get_speaker_name_from_alias(name: str) -> str:
     return map_speakers_to_aliases.get(name, name)
 
-def load_and_prepare_data(filepath):
-    with open(filepath, 'r', encoding='utf-8') as file:
-        data = [json.loads(line) for line in file]
-
-    df = pd.DataFrame(data)
-    df['speaker_name'] = df['speaker_name'].apply(get_speaker_name_from_alias)
-    speaker_counts = df['speaker_name'].value_counts()
-    top_speakers = speaker_counts.index[:2]
-    print(top_speakers)
-
-    df['class'] = df['speaker_name'].apply(lambda x: 'first' if x == top_speakers[0] else ('second' if x == top_speakers[1] else None))
-    df = df[df['class'].notna()]
-
-    min_samples = df['class'].value_counts().min()
-    df = df.groupby('class').apply(lambda x: x.sample(n=min_samples, random_state=42)).reset_index(drop=True)
-
-    return df
-
-def eval_knn(features, labels, n_neighbors=9, metric='cosine'):
-
-    classifier = KNeighborsClassifier(n_neighbors=n_neighbors, metric=metric)
-    # Encoding labels
-    label_encoder = LabelEncoder()
-    encoded_labels = label_encoder.fit_transform(labels)
-
-    # 5-fold cross-validation
-    predictions = cross_val_predict(classifier, features, encoded_labels, cv=5)
-    # scores = cross_val_score(classifier, features, encoded_labels, cv=5)
-    report = classification_report(encoded_labels, predictions, target_names=label_encoder.classes_, zero_division=0)
-
-    # print(f"Mean Accuracy: {np.mean(scores):.4f}")
-    print(f"{report}")
-
-def load_corpus(file_path):
-    sentences = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            data = json.loads(line)
-            sentences.append(data['sentence_text'])
-    return sentences
-
-def preprocess_sentences(sentences):
-    tokenized_sentences = []
-    pattern = (
-        r'\"[^\"]+\"|'          
-        r'[א-ת]+\"[א-ת]+|'      
-        r'[א-ת]+\'[א-ת]+|'    
-        r'[א-ת]+'               
-    )
-
-    for sentence in sentences:
-        tokens = re.findall(pattern, sentence)
-        clean_tokens = [token.strip('"') for token in tokens]
-        filtered_tokens = [token for token in clean_tokens if len(token) > 1]
-        tokenized_sentences.append(filtered_tokens)
-    return tokenized_sentences
-
-def compute_sentence_embeddings(sentences, model):
-    sentence_embeddings = []
-    # compute the sentence embedding as the average of the word embeddings
-    for sentence in sentences:
-        valid_tokens = [word for word in sentence if word in model.wv]
-        # if there are no valid tokens, the sentence embedding is a zero vector
-        if valid_tokens:
-            # compute the sentence embedding as the average of the word embeddings
-            word_vectors = np.array([model.wv[word] for word in valid_tokens])
-            sentence_vector = np.mean(word_vectors, axis=0)
-        else:
-            sentence_vector = np.zeros(model.vector_size)
-        sentence_embeddings.append(sentence_vector)
-    return sentence_embeddings
-
-if __name__ == '__main__':
-    if(len(sys.argv) != 3):
-        print("Usage: knesset_word2vec_classification.py <corpus_file_path> <model_path>")
-        sys.exit(1)
-    knesset_corpus_path = sys.argv[1]
-    model_path = sys.argv[2]
-
+# function to extract the speaker data from the corpus
+def extract_speaker_data(corpus_df, model_path):
+    sentences, embeddings, speakers = [], [], []
     model = Word2Vec.load(model_path)
-    raw_sentences = load_corpus(knesset_corpus_path)
-    tokenized_sentences = preprocess_sentences(raw_sentences)
-    print("First 5 tokenized sentences:")
-    for i in range(5):
-        print(tokenized_sentences[i])
-    
-    sentence_embeddings = compute_sentence_embeddings(tokenized_sentences, model)
-    df = load_and_prepare_data(knesset_corpus_path)
-    print("DataFrame head:")
-    print(df.head())
-    print("\nDataFrame info:")
-    print(df.info())
-    print("\nFirst 5 sentence embeddings:")
-    print(sentence_embeddings[:5])
+    for _, row in corpus_df.iterrows():
+        sentence = row['sentence_text']
+        raw_speaker = row['speaker_name']
+        speaker = get_speaker_name_from_alias(raw_speaker)
+        if speaker in ["ראובן ריבלין", "א' בורג"]:
+            sentences.append(sentence)
+            speakers.append(speaker)
+            tokens = tokenize_sentence(sentence)
+            embeddings.append(compute_mean_embedding(tokens, model))
+    return sentences, embeddings, speakers
 
-    df = df.reset_index(drop=True)
+# function to tokenize a sentence
+def tokenize_sentence(sentence):
+    tokens = [re.sub(r'[^\u0590-\u05FF]', '', token) for token in sentence.split()]
+    return [token for token in tokens if token and len(token) > 1]
 
-    filtered_embeddings = np.array(sentence_embeddings)[df.index.values]
+# function to compute the mean embedding of a list of tokens
+def compute_mean_embedding(tokens, model):
+    word_vectors = [model.wv[word] for word in tokens if word in model.wv]
+    return np.mean(word_vectors, axis=0) if word_vectors else np.zeros(model.vector_size)
 
-    eval_knn(filtered_embeddings, df['class'])
+# function to balance the classes by undersampling the majority class
+def downsample_classes(sentences, embeddings, speakers):
+    speaker1_count = speakers.count("ראובן ריבלין")
+    speaker2_count = speakers.count("א' בורג")
+    majority_class, minority_class = ("ראובן ריבלין", "א' בורג") if speaker1_count > speaker2_count else ("א' בורג", "ראובן ריבלין")
+    majority_indices = [i for i, s in enumerate(speakers) if s == majority_class]
+    minority_indices = [i for i, s in enumerate(speakers) if s == minority_class]
+    np.random.seed(42)
+    np.random.shuffle(majority_indices)
+    majority_indices = majority_indices[:len(minority_indices)]
+    balanced_indices = majority_indices + minority_indices
+    return [sentences[i] for i in balanced_indices], [embeddings[i] for i in balanced_indices], [speakers[i] for i in balanced_indices]
+
+# function to evaluate the classifier using 5-fold cross-validation
+def evaluate_classifier(embeddings, labels):
+    features = np.array(embeddings)
+    encoded_labels = LabelEncoder().fit_transform(labels)
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    knn = KNeighborsClassifier(n_neighbors=5, metric='cosine')
+    predictions = cross_val_predict(knn, features, encoded_labels, cv=skf)
+    report = classification_report(encoded_labels, predictions, target_names=LabelEncoder().fit(labels).classes_, zero_division=0)
+    print(report)
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        sys.exit(1)
+    corpus_path, model_path = sys.argv[1], sys.argv[2]
+    try:
+        tokenized_sentences = preprocess_corpus(corpus_path)
+        model = Word2Vec.load(model_path)
+    except Exception as e:
+        sys.exit(f"Error loading the model or processing the input file: {e}")
+    corpus_df = pd.read_json(corpus_path, lines=True)
+    sentences, embeddings, speakers = extract_speaker_data(corpus_df, model_path)
+    balanced_sentences, balanced_embeddings, balanced_speakers = downsample_classes(sentences, embeddings, speakers)
+    evaluate_classifier(balanced_embeddings, balanced_speakers)
