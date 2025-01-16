@@ -1,0 +1,40 @@
+masked_sentence: אתה התעקשת [MASK] לייצר הצבעה על כלום .
+dictaBERT_sentence: אתה התעקשת [לא] לייצר הצבעה על כלום .
+dictaBERT tokens: לא
+
+masked_sentence: אדוני [MASK] אתה שאלת , אני אענה .
+dictaBERT_sentence: אדוני [,] אתה שאלת , אני אענה .
+dictaBERT tokens: ,
+
+masked_sentence: הוראת השעה התייחסה לתקינה של מספר הילדים [MASK]
+dictaBERT_sentence: הוראת השעה התייחסה לתקינה של מספר הילדים [.]
+dictaBERT tokens: .
+
+masked_sentence: שתדעו שבכל החקיקה הזאת [MASK] טיפלו ברטרואקטיביות .
+dictaBERT_sentence: שתדעו שבכל החקיקה הזאת [לא] טיפלו ברטרואקטיביות .
+dictaBERT tokens: לא
+
+masked_sentence: אנחנו מאוד רגישים לנושא הזה ואנחנו לא נאפשר שילד שירצה להיות בפעילות שלנו הוא לא [MASK] בפעילות שלנו – זה בכל תנועות [MASK] .
+dictaBERT_sentence: אנחנו מאוד רגישים לנושא הזה ואנחנו לא נאפשר שילד שירצה להיות בפעילות שלנו הוא לא [יהיה] בפעילות שלנו – זה בכל תנועות [שלנו] .
+dictaBERT tokens: יהיה, שלנו
+
+masked_sentence: זה שוב [MASK] , זה עובר כחוט השני בין כל הנקודות הללו , שמחבר את כולם , שתוכניות מחד , ביצוע [MASK] .
+dictaBERT_sentence: זה שוב [קורה] , זה עובר כחוט השני בין כל הנקודות הללו , שמחבר את כולם , שתוכניות מחד , ביצוע [מאידך] .
+dictaBERT tokens: קורה, מאידך
+
+masked_sentence: [MASK] , אנחנו רוצים לשמוע את מוטי ששון .
+dictaBERT_sentence: [לכן] , אנחנו רוצים לשמוע את מוטי ששון .
+dictaBERT tokens: לכן
+
+masked_sentence: [MASK] תעשה להם את הריכוז ?
+dictaBERT_sentence: [איך] תעשה להם את הריכוז ?
+dictaBERT tokens: איך
+
+masked_sentence: אני מרגישה [MASK] קצת אולי נעדר בדיון .
+dictaBERT_sentence: אני מרגישה [שאני] קצת אולי נעדר בדיון .
+dictaBERT tokens: שאני
+
+masked_sentence: זה חתום [MASK] ידי אגף התקציבים , אבל זה לא משנה .
+dictaBERT_sentence: זה חתום [על] ידי אגף התקציבים , אבל זה לא משנה .
+dictaBERT tokens: על
+

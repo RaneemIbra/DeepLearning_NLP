@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # load the corpus, preprocess the sentences and train the word2vec model
     raw_sentences = load_corpus(knesset_corpus_path)
     tokenized_sentences = preprocess_sentences(raw_sentences)
-    model = Word2Vec(tokenized_sentences, vector_size=50, window=5, min_count=1)
+    model = Word2Vec(tokenized_sentences, vector_size=100, window=5, min_count=1)
 
     model_path = output_dir + '/knesset_word2vec.model'
     output_file_path_similar_words = output_dir + '/knesset_similar_words.txt'
@@ -113,7 +113,9 @@ if __name__ == '__main__':
     # compute the sentence embeddings
     sentence_embeddings = compute_sentence_embeddings(tokenized_sentences, model)
 
-    chosen_indices = [i for i, sentence in enumerate(tokenized_sentences) if len(sentence) >= 4][:10]
+    # select 10 random sentences to make it more diverse
+    np.random.seed(42)
+    chosen_indices = np.random.choice(len(tokenized_sentences), 10, replace=False)
     similar_sentences = find_most_similar_sentences(raw_sentences, sentence_embeddings, chosen_indices)
 
     output_file_similar_sentences = output_dir + '/knesset_similar_sentences.txt'

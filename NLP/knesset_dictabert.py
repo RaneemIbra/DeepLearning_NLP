@@ -32,6 +32,7 @@ def predict_masked_tokens(masked_sentence):
 
     return predicted_tokens
 
+# process the masked sentences and save the results to the output file
 def process_and_save_results(sentences, output_filepath):
     with open(output_filepath, 'w', encoding='utf-8') as file:
         for original_sentence, masked_sentence in sentences:
@@ -41,7 +42,6 @@ def process_and_save_results(sentences, output_filepath):
             for token in predicted_tokens:
                 dictaBERT_sentence = dictaBERT_sentence.replace("MASK", token, 1)
 
-            file.write(f"original_sentence: {original_sentence}\n")
             file.write(f"masked_sentence: {masked_sentence}\n")
             file.write(f"dictaBERT_sentence: {dictaBERT_sentence}\n")
             file.write(f"dictaBERT tokens: {', '.join(predicted_tokens)}\n")
@@ -54,5 +54,6 @@ if __name__ == '__main__':
 
     masked_sentences_file = sys.argv[1]
     output_file = sys.argv[2]
+    # load the masked sentences from the file
     sentences = load_masked_sentences(masked_sentences_file)
     process_and_save_results(sentences, output_file)
