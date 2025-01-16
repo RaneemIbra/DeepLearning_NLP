@@ -48,23 +48,34 @@ def compute_sentence_embeddings(sentences, model):
     return sentence_embeddings
 
 
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+
 def find_most_similar_sentences(raw_sentences, embeddings, chosen_indices):
+    # Ensure embeddings are 2D
+    embeddings = np.array(embeddings)
+    if embeddings.ndim == 1:  # Handle single-dimensional case
+        embeddings = embeddings.reshape(-1, 1)
+
     results = []
 
+    # Compute pairwise cosine similarities
+    print("Computing similarity matrix...")
+    similarity_matrix = cosine_similarity(embeddings)
+
     for idx in chosen_indices:
+        if idx >= len(raw_sentences) or idx >= len(embeddings):
+            raise IndexError(f"Index {idx} is out of bounds for the sentences or embeddings.")
+
         chosen_sentence = raw_sentences[idx]
-        chosen_embedding = embeddings[idx].reshape(1, -1)  # Reshape for sklearn cosine_similarity
 
-        # Compute cosine similarity with all other sentences
-        similarities = []
-        for i, embedding in enumerate(embeddings):
-            if i != idx:  # If it's not the same sentence
-                embedding = embedding.reshape(1, -1)  # Reshape for sklearn cosine_similarity
-                similarity = cosine_similarity(chosen_embedding, embedding)[0][0]
-                similarities.append((i, similarity))
+        # Set self-similarity to -1 to exclude it
+        similarities = similarity_matrix[idx]
+        similarities[idx] = -1
 
-        # Find the highest similarity score
-        most_similar_idx, _ = max(similarities, key=lambda x: x[1])
+        # Find the index of the most similar sentence
+        most_similar_idx = np.argmax(similarities)
         most_similar_sentence = raw_sentences[most_similar_idx]
 
         results.append((chosen_sentence, most_similar_sentence))
@@ -74,7 +85,7 @@ def find_most_similar_sentences(raw_sentences, embeddings, chosen_indices):
 if __name__ == '__main__':
     # check if the correct number of arguments was given
     if(len(sys.argv) != 3):
-        print("Usage: knesset_word2vec.py <corpus_file_path>")
+        print("Usage: knesset_word2vec.py <corpus_file_path> <output_dir>")
         sys.exit(1)
     knesset_corpus_path = sys.argv[1]
     output_dir = sys.argv[2]
@@ -82,7 +93,7 @@ if __name__ == '__main__':
     # load the corpus, preprocess the sentences and train the word2vec model
     raw_sentences = load_corpus(knesset_corpus_path)
     tokenized_sentences = preprocess_sentences(raw_sentences)
-    model = Word2Vec(tokenized_sentences, vector_size=50, window=5, min_count=1, workers=4)
+    model = Word2Vec(tokenized_sentences, vector_size=100, window=5, min_count=1)
 
     model_path = output_dir + '/knesset_word2vec.model'
     output_file_path_similar_words = output_dir + '/knesset_similar_words.txt'
@@ -152,14 +163,14 @@ if __name__ == '__main__':
 
                         modified_sentence = modified_sentence.replace(word, replacement_word)
                         replacements.append((word, replacement_word))
-
                         print(f"Top 3 replacements for '{word}' in '{sentence}':")
                         for similar_word, score in similar_words:
                             print(f"  {similar_word} ({score:.4f})")
+
                     except KeyError:
                         replacement_word = word
 
             file.write(
                 f"{i}: {original_sentence}: {modified_sentence}\n"
-                f"replaced words: {', '.join(f'({orig}:{rep})' for orig, rep in replacements)}\n\n"
+                f"replaced words: {', '.join(f'({orig}:{rep})' for orig, rep in replacements)}\n"
             )
