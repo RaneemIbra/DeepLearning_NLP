@@ -99,42 +99,28 @@ if __name__ == "__main__":
     # Convert results to DataFrame for easier handling
     results_df = pd.DataFrame(results)
 
-    # Save the results to a text file
-    with open(output_file_path, 'w') as f:
+    # Save the results to a text file with UTF-8 encoding
+    with open(output_file_path, 'w', encoding='utf-8') as f:
         for index, result in results_df.iterrows():
             f.write(f"Review {index + 1}: {result['Review']}\n")
             f.write(f"Review {index + 1} True Label: {result['True Label']}\n")
             f.write(f"Review {index + 1} Zero-Shot: {result['Zero-Shot']}\n")
             f.write(f"Review {index + 1} Few-Shot: {result['Few-Shot']}\n")
-            f.write(f"Review {index + 1} Instruction-Based: {result['Instruction-Based']}\n\n")
+            f.write(f"Review {index + 1} Instruction-Based: {result['Instruction-Based']}\n")
 
-    print(f"Classification results saved to '{output_file_path}'")
 
-    # Extract true labels and predictions for each prompting strategy
-    true_labels = results_df['True Label'].tolist()
-    zero_shot_predictions = results_df['Zero-Shot'].apply(lambda x: 'Positive' if 'positive' in x.lower() else 'Negative').tolist()
-    few_shot_predictions = results_df['Few-Shot'].apply(lambda x: 'Positive' if 'positive' in x.lower() else 'Negative').tolist()
-    instruction_based_predictions = results_df['Instruction-Based'].apply(lambda x: 'Positive' if 'positive' in x.lower() else 'Negative').tolist()
+    # # Extract true labels and predictions for each prompting strategy
+    # true_labels = results_df['True Label'].tolist()
+    # zero_shot_predictions = results_df['Zero-Shot'].apply(lambda x: 'Positive' if 'positive' in x.lower() else 'Negative').tolist()
+    # few_shot_predictions = results_df['Few-Shot'].apply(lambda x: 'Positive' if 'positive' in x.lower() else 'Negative').tolist()
+    # instruction_based_predictions = results_df['Instruction-Based'].apply(lambda x: 'Positive' if 'positive' in x.lower() else 'Negative').tolist()
 
-    # Calculate accuracy for each prompt type
-    zero_shot_accuracy = accuracy_score(true_labels, zero_shot_predictions)
-    few_shot_accuracy = accuracy_score(true_labels, few_shot_predictions)
-    instruction_based_accuracy = accuracy_score(true_labels, instruction_based_predictions)
+    # # Calculate accuracy for each prompt type
+    # zero_shot_accuracy = accuracy_score(true_labels, zero_shot_predictions)
+    # few_shot_accuracy = accuracy_score(true_labels, few_shot_predictions)
+    # instruction_based_accuracy = accuracy_score(true_labels, instruction_based_predictions)
 
-    # Print the accuracies
-    print(f"Zero-Shot Accuracy: {zero_shot_accuracy:.2f}")
-    print(f"Few-Shot Accuracy: {few_shot_accuracy:.2f}")
-    print(f"Instruction-Based Accuracy: {instruction_based_accuracy:.2f}")
-
-    # Save the analysis to a file or display it as needed
-    analysis_results = {
-        "Zero-Shot": zero_shot_accuracy,
-        "Few-Shot": few_shot_accuracy,
-        "Instruction-Based": instruction_based_accuracy
-    }
-
-    # Optional: Save the results to a CSV or text file for reporting
-    results_analysis_df = pd.DataFrame([analysis_results])
-    results_analysis_df.to_csv('prompting_strategy_accuracy_analysis.csv', index=False)
-
-    print("Detailed accuracy analysis saved to 'prompting_strategy_accuracy_analysis.csv'.")
+    # # Print the accuracies
+    # print(f"Zero-Shot Accuracy: {zero_shot_accuracy:.2f}")
+    # print(f"Few-Shot Accuracy: {few_shot_accuracy:.2f}")
+    # print(f"Instruction-Based Accuracy: {instruction_based_accuracy:.2f}")
