@@ -51,7 +51,7 @@ tokenizer.save_pretrained(os.path.join(models_dir, "gpt2_negative"))
 training_args = TrainingArguments(
     output_dir=models_dir,
     learning_rate=6e-5,
-    per_device_train_batch_size=4,
+    per_device_train_batch_size=8,
     num_train_epochs=15,
     logging_dir=os.path.join(models_dir, "gpt2_logs"),
     logging_steps=100,
@@ -62,7 +62,6 @@ training_args = TrainingArguments(
 data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
 # Train Positive Model
-print("Training positive sentiment model...")
 model_positive = GPT2LMHeadModel.from_pretrained("gpt2")
 trainer_positive = Trainer(
     model=model_positive,
@@ -74,7 +73,6 @@ trainer_positive.train()
 trainer_positive.save_model(os.path.join(models_dir, "gpt2_positive"))
 
 # Train Negative Model
-print("Training negative sentiment model...")
 model_negative = GPT2LMHeadModel.from_pretrained("gpt2")
 trainer_negative = Trainer(
     model=model_negative,
@@ -100,14 +98,15 @@ temperature = 0.7
 top_k = 40
 top_p = 0.9
 repetition_penalty = 1.2
+attention_mask = input_ids.ne(tokenizer.pad_token_id)
 
 # Generate Positive Reviews
-print("Generating positive reviews...")
 positive_reviews = []
 with torch.no_grad():
     for _ in range(5):
         output = model_positive.generate(
             input_ids,
+            attention_mask=attention_mask,
             max_length=max_length,
             temperature=temperature,
             top_k=top_k,
@@ -118,12 +117,12 @@ with torch.no_grad():
         positive_reviews.append(tokenizer.decode(output[0], skip_special_tokens=True))
 
 # Generate Negative Reviews
-print("Generating negative reviews...")
 negative_reviews = []
 with torch.no_grad():
     for _ in range(5):
         output = model_negative.generate(
             input_ids,
+            attention_mask=attention_mask,
             max_length=max_length,
             temperature=temperature,
             top_k=top_k,
