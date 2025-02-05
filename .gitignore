@@ -24,3 +24,5 @@ DL/Test
 DL/Rain
 DL/Shine
 NLP/bert_imdb_subset
+NLP/models
+DL/Songs.csv
